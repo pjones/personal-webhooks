@@ -24,6 +24,7 @@ the LICENSE file.
 module Web.Hooks.Personal.Action.Internal
   ( Action(..)
   , Status(..)
+  , normalize
   , statusToHTTP
   , run
   ) where
@@ -37,7 +38,7 @@ import Control.Monad.Trans.Maybe (MaybeT(runMaybeT))
 import Data.Aeson (ToJSON, FromJSON, encode)
 import qualified Data.ByteString.Lazy as LBS
 import GHC.Generics (Generic)
-import System.Directory (doesFileExist, getFileSize)
+import System.Directory (makeAbsolute, doesFileExist, getFileSize)
 import System.IO (IOMode(AppendMode), withFile)
 
 --------------------------------------------------------------------------------
@@ -61,6 +62,15 @@ data Action = AppendFileAction FilePath
 instance ToJSON Action
 instance FromJSON Action
 liftJSON ''Action
+
+--------------------------------------------------------------------------------
+-- | Some actions need to be normalized because their fields were set
+-- by a user whom shouldn't have to understand how to create a
+-- well-formed 'Action'.  For example, file paths must be converted to
+-- absolute paths.
+normalize :: Action -> IO Action
+normalize (AppendFileAction f) = AppendFileAction <$> makeAbsolute f
+normalize NoAction             = return NoAction
 
 --------------------------------------------------------------------------------
 -- | Possible responses from running an action.

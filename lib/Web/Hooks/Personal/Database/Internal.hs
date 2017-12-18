@@ -18,9 +18,12 @@ the LICENSE file.
 --------------------------------------------------------------------------------
 module Web.Hooks.Personal.Database.Internal
   ( Database
+  , Page(..)
+  , Rows(..)
   , database
   , runQuery
   , runInsert
+  , limit
   , migrate
   ) where
 
@@ -56,6 +59,10 @@ import Web.Hooks.Personal.Database.Config
 data Database = Database
   { dbPool :: Pool Connection
   }
+
+--------------------------------------------------------------------------------
+newtype Rows = Rows Int -- ^ Limit a query to n rows per page.
+newtype Page = Page Int -- ^ The page number to query.
 
 --------------------------------------------------------------------------------
 -- | Given a configuration object, create a database handle.
@@ -107,6 +114,11 @@ runInsert :: (MonadIO m, Default Opaleye.Constant h cs)
 runInsert d t hs =
   withConnection d $ \c ->
     Opaleye.runInsertMany c t (map Opaleye.constant hs)
+
+--------------------------------------------------------------------------------
+-- | A wrapper around Opaleye's limit and offset features.
+limit :: Page -> Rows -> Opaleye.Query a -> Opaleye.Query a
+limit (Page x) (Rows y) = Opaleye.limit y . Opaleye.offset (x * y)
 
 --------------------------------------------------------------------------------
 -- | Run the database migrations.  Exits the current process if there

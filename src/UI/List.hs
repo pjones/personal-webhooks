@@ -28,6 +28,7 @@ import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import Data.Default (def)
 import qualified Data.Text as Text
+import qualified Opaleye
 import Options.Applicative
 import qualified Text.Layout.Table as Table
 
@@ -66,11 +67,11 @@ parser = Options <$> format
 --------------------------------------------------------------------------------
 formatted :: [Hook.Hook] -> IO ()
 formatted hs =
-    putStrLn $ Table.tableString specs Table.asciiS header (map row hs)
+    putStrLn $ Table.tableString specs Table.asciiS headers (map row hs)
 
   where
     specs = [Table.numCol, def, def, def]
-    header = Table.titlesH ["ID", "Code", "Action", "Expires"]
+    headers = Table.titlesH ["ID", "Code", "Action", "Expires"]
     row Hook.Hook{..} = Table.rowG [ show hookID
                                    , Text.unpack hookCode
                                    , show hookAction
@@ -81,10 +82,15 @@ formatted hs =
 -- | Run the @create@ command to create a new web hook.
 run :: Options -> Database -> IO ()
 run Options{..} db = do
-  hooks <- Database.runQuery db Hook.all :: IO [Hook.Hook]
+  hooks <- Database.runQuery db query :: IO [Hook.Hook]
 
   case optionFormat of
     Table -> formatted hooks
     JSON  -> LBS.putStrLn (Aeson.encode hooks)
     Plain -> forM_ hooks $ \Hook.Hook{..} ->
                print (hookID, hookCode, hookAction, hookExpirationTime)
+
+  where
+    query = Database.limit (Database.Page 0) (Database.Rows 100) $
+              Opaleye.orderBy (Opaleye.asc Hook.hookID) $
+              Hook.findWithExpired Hook.AllHooks

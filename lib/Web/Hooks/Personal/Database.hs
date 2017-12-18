@@ -16,9 +16,12 @@ the LICENSE file.
 module Web.Hooks.Personal.Database
   ( Database.Database
   , Database.Config(..)
+  , Database.Page(..)
+  , Database.Rows(..)
   , Database.database
   , Database.runQuery
   , Database.runInsert
+  , Database.limit
   , Database.migrate
   ) where
 

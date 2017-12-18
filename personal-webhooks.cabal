@@ -46,6 +46,7 @@ library
       Web.Hooks.Personal.Database.Internal
     Web.Hooks.Personal.Hook
       Web.Hooks.Personal.Hook.Database
+      Web.Hooks.Personal.Hook.FindBy
       Web.Hooks.Personal.Hook.Internal  
     Web.Hooks.Personal.Request
       Web.Hooks.Personal.Request.Config
@@ -77,10 +78,14 @@ library
                , profunctors                 >= 5.2  && < 5.3
                , resource-pool               >= 0.2  && < 0.3
                , sandi                       >= 0.4  && < 0.5
+               , snap                        >= 1.0  && < 1.1
+               , snap-core                   >= 1.0  && < 1.1
+               , snap-server                 >= 1.0  && < 1.1
                , template-haskell            >= 2.11 && < 2.12
                , text                        >= 1.2  && < 1.3
                , time                        >= 1.6  && < 1.9
                , transformers                >= 0.5  && < 1.0
+               , yaml                        >= 0.8  && < 0.9
 
 --------------------------------------------------------------------------------
 executable webhooks
@@ -91,11 +96,13 @@ executable webhooks
   hs-source-dirs: src
   main-is: Main.hs
   default-language: Haskell2010
+  ghc-options: -Wall -fwarn-incomplete-uni-patterns -Wincomplete-record-updates
 
   build-depends: base
                , aeson
                , bytestring
                , data-default
+               , opaleye
                , optparse-applicative
                , personal-webhooks
                , table-layout >= 0.8 && < 0.9

@@ -18,6 +18,7 @@ module Web.Hooks.Personal.Action
   ( Action.Action(..)
   , Action.Status(..)
   , Action.Config(..)
+  , Action.normalize
   , Action.statusToHTTP
   , Action.run
   , Action.optionParser

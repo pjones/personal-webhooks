@@ -18,12 +18,15 @@ module Web.Hooks.Personal.Hook
   ( Hook.Hook
   , Hook.HookNotSaved
   , Hook.Hook'(..)
+  , Hook.FindBy(..)
   , Hook.hook
   , Hook.table
-  , Hook.all
-  , Hook.find
+  , Hook.findBy
+  , Hook.findWithExpired
+  , Hook.parseFindBy
   ) where
 
 --------------------------------------------------------------------------------
 import qualified Web.Hooks.Personal.Hook.Database as Hook
 import qualified Web.Hooks.Personal.Hook.Internal as Hook
+import qualified Web.Hooks.Personal.Hook.FindBy   as Hook

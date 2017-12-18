@@ -17,20 +17,20 @@ the LICENSE file.
 --------------------------------------------------------------------------------
 module Web.Hooks.Personal.Hook.Database
   ( table
-  , all
-  , find
+  , findBy
+  , findWithExpired
   ) where
 
 --------------------------------------------------------------------------------
 -- Library Imports:
 import Control.Arrow (returnA)
-import Data.Text (Text)
 import Opaleye
 import Prelude hiding (all)
 
 --------------------------------------------------------------------------------
 -- Local Imports:
 import Web.Hooks.Personal.Database.Functions (now)
+import Web.Hooks.Personal.Hook.FindBy
 import Web.Hooks.Personal.Hook.Internal
 
 --------------------------------------------------------------------------------
@@ -44,19 +44,36 @@ table = Table "hooks"
               })
 
 --------------------------------------------------------------------------------
--- | Fetch all hooks.
-all :: Query HookR
-all = queryTable table
+-- | Restrict a query to only those rows identified by 'FindBy'.
+findRestriction :: FindBy -> QueryArr HookR ()
+findRestriction by = case by of
+  HookID hid -> proc t -> restrict -< hookID t   .== pgInt8 hid
+  HookCode c -> proc t -> restrict -< hookCode t .== pgStrictText c
+  AllHooks   -> proc _ -> returnA  -< ()
 
 --------------------------------------------------------------------------------
--- | Find a hook based on its secret code.
-find :: Text -> Query HookR
-find code = proc () -> do
-    row <- queryTable table -< ()
-    restrict -< hookCode row .== pgStrictText code
-    restrict -< isNull (hookExpirationTime row) .|| notExpired row
-    returnA  -< row
+-- | Restrict a query so expired records are not returned.
+notExpired :: QueryArr HookR ()
+notExpired = proc t ->
+    restrict -< isNull (hookExpirationTime t) .|| checkExpired t
 
   where
-    notExpired :: HookR -> Column PGBool
-    notExpired row = fromNullable now (hookExpirationTime row) .< now
+    checkExpired :: HookR -> Column PGBool
+    checkExpired t = fromNullable now (hookExpirationTime t) .< now
+
+--------------------------------------------------------------------------------
+-- | Find a hook based on the given finder.
+findWithExpired :: FindBy -> Query HookR
+findWithExpired by = proc () -> do
+  t <- queryTable table -< ()
+  findRestriction by -< t
+  returnA  -< t
+
+--------------------------------------------------------------------------------
+-- | Find a hook based on the given finder.  Restricts the output to
+-- hooks that have not yet expired.
+findBy :: FindBy -> Query HookR
+findBy by = proc () -> do
+  t <- findWithExpired by -< ()
+  notExpired -< t
+  returnA -< t

@@ -48,6 +48,7 @@ parser = Options <$> Action.optionParser
 -- | Run the @create@ command to create a new webhook.
 run :: Options -> Database -> IO ()
 run Options{..} db = do
-  h <- Hook.hook Nothing optionAction
+  a <- Action.normalize optionAction
+  h <- Hook.hook Nothing a
   _ <- Database.runInsert db Hook.table [h]
   putStrLn ("New hook code: " ++ Text.unpack (Hook.hookCode h))
