@@ -36,24 +36,28 @@ flag maintainer
 library
   exposed-modules:
     Web.Hooks.Personal.Action
-      Web.Hooks.Personal.Action.Config
-      Web.Hooks.Personal.Action.Internal
-      Web.Hooks.Personal.Action.Options
-      Web.Hooks.Personal.Action.Status
     Web.Hooks.Personal.Config
     Web.Hooks.Personal.Database
-      Web.Hooks.Personal.Database.Config
-      Web.Hooks.Personal.Database.Functions
-      Web.Hooks.Personal.Database.Generic
-      Web.Hooks.Personal.Database.Internal
     Web.Hooks.Personal.Env
     Web.Hooks.Personal.Hook
-      Web.Hooks.Personal.Hook.Database
-      Web.Hooks.Personal.Hook.FindBy
-      Web.Hooks.Personal.Hook.Internal
     Web.Hooks.Personal.Request
-      Web.Hooks.Personal.Request.Config
-      Web.Hooks.Personal.Request.Internal
+      -- Web.Hooks.Personal.Internal.Action
+        Web.Hooks.Personal.Internal.Action.Config
+        Web.Hooks.Personal.Internal.Action.Options
+        Web.Hooks.Personal.Internal.Action.Prim
+        Web.Hooks.Personal.Internal.Action.Status
+      -- Web.Hooks.Personal.Internal.Database
+        Web.Hooks.Personal.Internal.Database.Config
+        Web.Hooks.Personal.Internal.Database.Functions
+        Web.Hooks.Personal.Internal.Database.Generic
+        Web.Hooks.Personal.Internal.Database.Prim
+      -- Web.Hooks.Personal.Internal.Hook
+        Web.Hooks.Personal.Internal.Hook.Database
+        Web.Hooks.Personal.Internal.Hook.FindBy
+        Web.Hooks.Personal.Internal.Hook.Prim
+      -- Web.Hooks.Personal.Internal.Request
+        Web.Hooks.Personal.Internal.Request.Config
+        Web.Hooks.Personal.Internal.Request.Prim
 
   other-modules:
     Paths_personal_webhooks

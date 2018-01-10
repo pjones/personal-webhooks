@@ -16,7 +16,7 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Web.Hooks.Personal.Database.Internal
+module Web.Hooks.Personal.Internal.Database.Prim
   ( Database
   , Page(..)
   , Rows(..)
@@ -52,7 +52,7 @@ import Database.PostgreSQL.Simple.Migration ( MigrationCommand(..)
 --------------------------------------------------------------------------------
 -- Local Imports:
 import Paths_personal_webhooks (getDataDir)
-import Web.Hooks.Personal.Database.Config
+import Web.Hooks.Personal.Internal.Database.Config
 
 --------------------------------------------------------------------------------
 -- | A database handle.

@@ -13,7 +13,7 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Web.Hooks.Personal.Hook.FindBy
+module Web.Hooks.Personal.Internal.Hook.FindBy
   ( FindBy(..)
   , parseFindBy
   ) where

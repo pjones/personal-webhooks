@@ -21,5 +21,5 @@ module Web.Hooks.Personal.Request
   ) where
 
 --------------------------------------------------------------------------------
-import qualified Web.Hooks.Personal.Request.Config as Request
-import qualified Web.Hooks.Personal.Request.Internal as Request
+import qualified Web.Hooks.Personal.Internal.Request.Config as Request
+import qualified Web.Hooks.Personal.Internal.Request.Prim   as Request

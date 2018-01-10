@@ -22,7 +22,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 -- | Actions that can be performed in response to an HTTP request.
-module Web.Hooks.Personal.Action.Internal
+module Web.Hooks.Personal.Internal.Action.Prim
   ( Action(..)
   , normalize
   , run
@@ -44,11 +44,11 @@ import System.Timeout (timeout)
 
 --------------------------------------------------------------------------------
 -- Local Imports.
-import Web.Hooks.Personal.Action.Config (Config)
-import qualified Web.Hooks.Personal.Action.Config as Config
-import Web.Hooks.Personal.Action.Status (Status(..), assert, statusFromEither)
-import Web.Hooks.Personal.Database.Generic (liftJSON)
-import Web.Hooks.Personal.Request.Internal
+import Web.Hooks.Personal.Internal.Action.Config (Config)
+import qualified Web.Hooks.Personal.Internal.Action.Config as Config
+import Web.Hooks.Personal.Internal.Action.Status (Status(..), assert, statusFromEither)
+import Web.Hooks.Personal.Internal.Database.Generic (liftJSON)
+import Web.Hooks.Personal.Internal.Request.Prim
 
 --------------------------------------------------------------------------------
 -- | The different kinds of actions.

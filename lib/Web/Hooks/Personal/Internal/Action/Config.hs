@@ -15,7 +15,7 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Web.Hooks.Personal.Action.Config
+module Web.Hooks.Personal.Internal.Action.Config
   ( Config(..)
   ) where
 

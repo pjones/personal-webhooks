@@ -27,6 +27,6 @@ module Web.Hooks.Personal.Hook
   ) where
 
 --------------------------------------------------------------------------------
-import qualified Web.Hooks.Personal.Hook.Database as Hook
-import qualified Web.Hooks.Personal.Hook.Internal as Hook
-import qualified Web.Hooks.Personal.Hook.FindBy   as Hook
+import qualified Web.Hooks.Personal.Internal.Hook.Database as Hook
+import qualified Web.Hooks.Personal.Internal.Hook.FindBy   as Hook
+import qualified Web.Hooks.Personal.Internal.Hook.Prim     as Hook

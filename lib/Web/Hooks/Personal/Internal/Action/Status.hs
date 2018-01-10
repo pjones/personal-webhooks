@@ -14,7 +14,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 -- | Status report after running an action.
-module Web.Hooks.Personal.Action.Status
+module Web.Hooks.Personal.Internal.Action.Status
   ( Status(..)
   , assert
   , statusFromEither

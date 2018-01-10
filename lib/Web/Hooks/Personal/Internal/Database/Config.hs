@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {-
 
 This file is part of the package personal-webhooks. It is subject to
@@ -13,30 +15,33 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
--- | Command line option parser for 'Action'.
-module Web.Hooks.Personal.Action.Options
-  ( optionParser
+module Web.Hooks.Personal.Internal.Database.Config
+  ( Config(..)
   ) where
 
 --------------------------------------------------------------------------------
--- Library Imports:
-import Options.Applicative
+import Data.Aeson (FromJSON(parseJSON), withObject, (.:?), (.!=))
+import Data.Default (Default(def))
+import Data.Text (Text)
 
 --------------------------------------------------------------------------------
--- Local Imports:
-import Web.Hooks.Personal.Action.Internal (Action(..))
+data Config = Config
+  { configConnectionString :: Text
+    -- ^ libpq connection string.
+
+  , configPoolSize :: Int
+    -- ^ Size of the database connection pool.
+  }
 
 --------------------------------------------------------------------------------
--- | Parse an 'Action' from the command line.
-optionParser :: Parser Action
-optionParser = appendFileAction
+instance Default Config where
+  def = Config
+        { configConnectionString = "user=webhooks dbname=webhooks password=webhooks"
+        , configPoolSize = 5
+        }
 
 --------------------------------------------------------------------------------
--- | Parse an 'AppendFileAction' from the command line.
-appendFileAction :: Parser Action
-appendFileAction =
-  AppendFileAction
-    <$> option str (mconcat [ long "append"
-                            , metavar "FILE"
-                            , help "Append the HTTP request to FILE"
-                            ])
+instance FromJSON Config where
+  parseJSON = withObject "database config" $ \v ->
+    Config <$> v .:? "connection" .!= configConnectionString def
+           <*> v .:? "poolSize"   .!= configPoolSize def

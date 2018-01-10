@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 {-
 
 This file is part of the package personal-webhooks. It is subject to
@@ -15,33 +13,30 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Web.Hooks.Personal.Database.Config
-  ( Config(..)
+-- | Command line option parser for 'Action'.
+module Web.Hooks.Personal.Internal.Action.Options
+  ( optionParser
   ) where
 
 --------------------------------------------------------------------------------
-import Data.Aeson (FromJSON(parseJSON), withObject, (.:?), (.!=))
-import Data.Default (Default(def))
-import Data.Text (Text)
+-- Library Imports:
+import Options.Applicative
 
 --------------------------------------------------------------------------------
-data Config = Config
-  { configConnectionString :: Text
-    -- ^ libpq connection string.
-
-  , configPoolSize :: Int
-    -- ^ Size of the database connection pool.
-  }
+-- Local Imports:
+import Web.Hooks.Personal.Internal.Action.Prim (Action(..))
 
 --------------------------------------------------------------------------------
-instance Default Config where
-  def = Config
-        { configConnectionString = "user=webhooks dbname=webhooks password=webhooks"
-        , configPoolSize = 5
-        }
+-- | Parse an 'Action' from the command line.
+optionParser :: Parser Action
+optionParser = appendFileAction
 
 --------------------------------------------------------------------------------
-instance FromJSON Config where
-  parseJSON = withObject "database config" $ \v ->
-    Config <$> v .:? "connection" .!= configConnectionString def
-           <*> v .:? "poolSize"   .!= configPoolSize def
+-- | Parse an 'AppendFileAction' from the command line.
+appendFileAction :: Parser Action
+appendFileAction =
+  AppendFileAction
+    <$> option str (mconcat [ long "append"
+                            , metavar "FILE"
+                            , help "Append the HTTP request to FILE"
+                            ])

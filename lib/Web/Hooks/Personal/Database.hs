@@ -26,5 +26,5 @@ module Web.Hooks.Personal.Database
   ) where
 
 --------------------------------------------------------------------------------
-import qualified Web.Hooks.Personal.Database.Config as Database
-import qualified Web.Hooks.Personal.Database.Internal as Database
+import qualified Web.Hooks.Personal.Internal.Database.Config as Database
+import qualified Web.Hooks.Personal.Internal.Database.Prim   as Database

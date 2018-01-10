@@ -14,7 +14,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 -- | Internal implementation of the 'Request' type and functions.
-module Web.Hooks.Personal.Request.Internal
+module Web.Hooks.Personal.Internal.Request.Prim
   ( Request(..)
   , fromJSON
   , fromParams

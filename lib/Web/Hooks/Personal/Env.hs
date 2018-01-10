@@ -29,8 +29,8 @@ import qualified System.Exit as Exit
 -- Local imports:
 import Web.Hooks.Personal.Config (Config)
 import qualified Web.Hooks.Personal.Config as Config
-import Web.Hooks.Personal.Database.Internal (Database)
-import qualified Web.Hooks.Personal.Database.Internal as Database
+import Web.Hooks.Personal.Internal.Database.Prim (Database)
+import qualified Web.Hooks.Personal.Internal.Database.Prim as Database
 
 --------------------------------------------------------------------------------
 -- | Everything you need to use this library.

@@ -15,7 +15,7 @@ the LICENSE file.
 -}
 
 --------------------------------------------------------------------------------
-module Web.Hooks.Personal.Hook.Database
+module Web.Hooks.Personal.Internal.Hook.Database
   ( table
   , findBy
   , findWithExpired
@@ -29,9 +29,9 @@ import Prelude hiding (all)
 
 --------------------------------------------------------------------------------
 -- Local Imports:
-import Web.Hooks.Personal.Database.Functions (now)
-import Web.Hooks.Personal.Hook.FindBy
-import Web.Hooks.Personal.Hook.Internal
+import Web.Hooks.Personal.Internal.Database.Functions (now)
+import Web.Hooks.Personal.Internal.Hook.FindBy
+import Web.Hooks.Personal.Internal.Hook.Prim
 
 --------------------------------------------------------------------------------
 -- | Opaleye defintion for the hooks table.

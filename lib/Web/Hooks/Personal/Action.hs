@@ -25,7 +25,7 @@ module Web.Hooks.Personal.Action
   ) where
 
 --------------------------------------------------------------------------------
-import qualified Web.Hooks.Personal.Action.Config   as Action
-import qualified Web.Hooks.Personal.Action.Internal as Action
-import qualified Web.Hooks.Personal.Action.Options  as Action
-import qualified Web.Hooks.Personal.Action.Status   as Action
+import qualified Web.Hooks.Personal.Internal.Action.Config  as Action
+import qualified Web.Hooks.Personal.Internal.Action.Options as Action
+import qualified Web.Hooks.Personal.Internal.Action.Prim    as Action
+import qualified Web.Hooks.Personal.Internal.Action.Status  as Action

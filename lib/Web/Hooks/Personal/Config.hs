@@ -34,9 +34,9 @@ import System.Directory (XdgDirectory(..), getXdgDirectory, doesFileExist)
 
 --------------------------------------------------------------------------------
 -- Local imports:
-import qualified Web.Hooks.Personal.Action.Config as Action
-import qualified Web.Hooks.Personal.Database.Config as Database
-import qualified Web.Hooks.Personal.Request.Config as Request
+import qualified Web.Hooks.Personal.Internal.Action.Config as Action
+import qualified Web.Hooks.Personal.Internal.Database.Config as Database
+import qualified Web.Hooks.Personal.Internal.Request.Config as Request
 
 --------------------------------------------------------------------------------
 -- | The master configuration structure containing all other

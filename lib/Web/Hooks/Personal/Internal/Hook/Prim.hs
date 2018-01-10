@@ -20,7 +20,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 -- | Information about how to handle an HTTP request.
-module Web.Hooks.Personal.Hook.Internal
+module Web.Hooks.Personal.Internal.Hook.Prim
   ( Hook
   , HookNotSaved
   , Hook'(..)
@@ -48,7 +48,7 @@ import Opaleye.PGTypes
 
 --------------------------------------------------------------------------------
 -- Local Imports.
-import Web.Hooks.Personal.Action.Internal (Action)
+import Web.Hooks.Personal.Internal.Action.Prim (Action)
 
 --------------------------------------------------------------------------------
 -- | Type alias to make the @Hook'@ type concrete.

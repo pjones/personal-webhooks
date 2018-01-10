@@ -14,7 +14,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 -- | Access to PostgreSQL functions.
-module Web.Hooks.Personal.Database.Functions
+module Web.Hooks.Personal.Internal.Database.Functions
   ( now
   ) where
 

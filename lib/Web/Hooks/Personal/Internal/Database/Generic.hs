@@ -18,7 +18,7 @@ the LICENSE file.
 
 --------------------------------------------------------------------------------
 -- | Use generic PostgreSQL columns to hold Haskell types.
-module Web.Hooks.Personal.Database.Generic
+module Web.Hooks.Personal.Internal.Database.Generic
   ( LiftJSON(..)
   , liftJSON
   ) where
