@@ -19,24 +19,29 @@ module Main (main) where
 
 --------------------------------------------------------------------------------
 -- Library Imports:
-import Data.Default (def)
+import Control.Monad.Trans.Reader (runReaderT)
 import Options.Applicative
 
 --------------------------------------------------------------------------------
 -- Local Imports:
 import qualified UI.Create as Create
 import qualified UI.List as List
-import qualified Web.Hooks.Personal.Database as Database
+import qualified UI.Run as Run
+import qualified Web.Hooks.Personal.Env as Env
 
 --------------------------------------------------------------------------------
 -- | Subcommand.
 data Command = Create Create.Options -- ^ Create a new hook.
              | List List.Options     -- ^ List hooks.
+             | Run Run.Options       -- ^ Run hooks.
 
 --------------------------------------------------------------------------------
 -- | Command line options
 data Options = Options
-  { optionCommand :: Command
+  { optionConfigFile :: Maybe FilePath
+    -- ^ Alternate configuration file to load.
+
+  , optionCommand :: Command
     -- ^ Which subcommand to run.
   }
 
@@ -45,8 +50,17 @@ data Options = Options
 parser :: Parser Options
 parser =
   Options
-    <$> subparser (mconcat [ createCommand
+    <$> optional
+          (option str
+            (mconcat [ long "config"
+                     , short 'c'
+                     , metavar "FILE"
+                     , help "Load FILE as an alternate config file"
+                     ]))
+
+    <*> subparser (mconcat [ createCommand
                            , listCommand
+                           , runCommand
                            ])
 
   where
@@ -60,15 +74,18 @@ parser =
     listCommand =
       mkCmd "list" "List hooks" (List <$> List.parser)
 
+    runCommand =
+      mkCmd "run" "Run hooks" (Run <$> Run.parser)
+
 --------------------------------------------------------------------------------
 -- | Main entry point.
 main :: IO ()
 main = do
   options <- execParser $ info (parser <**> helper) idm
+  env <- Env.env (optionConfigFile options)
 
-  database <- Database.database def
-  Database.migrate database False
-
-  case optionCommand options of
-    Create o -> Create.run o database
-    List o   -> List.run o database
+  flip runReaderT env $
+    case optionCommand options of
+      Create o -> Create.run o
+      List o   -> List.run o
+      Run o    -> Run.run o

@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TemplateHaskell       #-}
@@ -23,28 +24,29 @@ the LICENSE file.
 -- | Actions that can be performed in response to an HTTP request.
 module Web.Hooks.Personal.Action.Internal
   ( Action(..)
-  , Status(..)
   , normalize
-  , statusToHTTP
   , run
   ) where
 
 --------------------------------------------------------------------------------
 -- Library Imports.
 import Control.Exception (SomeException, catch)
-import Control.Monad (guard)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Trans.Maybe (MaybeT(runMaybeT))
+import Control.Monad.Trans.Except (ExceptT(..), runExceptT)
 import Data.Aeson (ToJSON, FromJSON, encode)
 import qualified Data.ByteString.Lazy as LBS
+import Data.Maybe (isJust)
+import Data.Monoid ((<>))
 import GHC.Generics (Generic)
 import System.Directory (makeAbsolute, doesFileExist, getFileSize)
 import System.IO (IOMode(AppendMode), withFile)
+import System.Timeout (timeout)
 
 --------------------------------------------------------------------------------
 -- Local Imports.
 import Web.Hooks.Personal.Action.Config (Config)
 import qualified Web.Hooks.Personal.Action.Config as Config
+import Web.Hooks.Personal.Action.Status (Status(..), assert, statusFromEither)
 import Web.Hooks.Personal.Database.Generic (liftJSON)
 import Web.Hooks.Personal.Request.Internal
 
@@ -68,22 +70,9 @@ liftJSON ''Action
 -- by a user whom shouldn't have to understand how to create a
 -- well-formed 'Action'.  For example, file paths must be converted to
 -- absolute paths.
-normalize :: Action -> IO Action
-normalize (AppendFileAction f) = AppendFileAction <$> makeAbsolute f
+normalize :: (MonadIO m) => Action -> m Action
+normalize (AppendFileAction f) = AppendFileAction <$> liftIO (makeAbsolute f)
 normalize NoAction             = return NoAction
-
---------------------------------------------------------------------------------
--- | Possible responses from running an action.
-data Status = Okay    -- ^ Action ran successfully
-            | Invalid -- ^ Action can't run due to missing file/info.
-            | Fail    -- ^ Action failed.
-
---------------------------------------------------------------------------------
--- | Translate a 'Status' into an HTTP status code.
-statusToHTTP :: Status -> Int
-statusToHTTP Okay    = 204
-statusToHTTP Invalid = 501
-statusToHTTP Fail    = 500
 
 --------------------------------------------------------------------------------
 -- | Run an action.
@@ -100,39 +89,37 @@ run :: (MonadIO m)
     -> m Status
     -- ^ Result status.
 
-run Config.Config{..} (Request v) a = do
-  result <- liftIO $ catch (runMaybeT action)
-                           (\(_ :: SomeException) -> return $ Just Fail)
-
-  case result of
-    Nothing -> return Invalid
-    Just r  -> return r
+run Config.Config{..} (Request v) a =
+  statusFromEither <$> liftIO (catch (runExceptT action) handleE)
 
   where
-    action :: MaybeT IO Status
+    handleE :: SomeException -> IO (Either Status a)
+    handleE e = return . Left . Fail $ show e
+
+    action :: ExceptT Status IO ()
     action =
       case a of
         AppendFileAction f -> append f
-        NoAction           -> return Okay
+        NoAction           -> return ()
         -- Room to grow...
 
-    append :: FilePath -> MaybeT IO Status
+    append :: FilePath -> ExceptT Status IO ()
     append file = do
       -- Verify the file exists.
       exists <- liftIO (doesFileExist file)
-      guard exists
+      assert exists (Invalid $ "file doesn't exist: " ++ file)
 
       -- Ensure it won't grow bigger than allowed.
-      let bs = encode v
+      let bs = encode v <> "\n"
           bsize = toInteger (LBS.length bs)
 
       size <- liftIO (getFileSize file)
-      guard (size + bsize <= configMaxFileSize)
+      assert (size + bsize <= configMaxFileSize)
+             (Fail "file size exceeds configured maximum")
 
       -- Safe to append now.
-      remaining <- liftIO $ withFile file AppendMode (`LBS.hPutNonBlocking` bs)
+      t <- liftIO $ timeout (configWriteTimeout * 1000) $
+        withFile file AppendMode (`LBS.hPut` bs)
 
       -- Test to see if all data was written.
-      if LBS.null remaining
-         then return Okay
-         else return Fail
+      assert (isJust t) (Fail $ "timeout while writing to " ++ file)

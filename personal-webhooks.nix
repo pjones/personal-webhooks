@@ -21,7 +21,7 @@ mkDerivation {
   ];
   executableHaskellDepends = [
     aeson base bytestring data-default opaleye optparse-applicative
-    table-layout text
+    table-layout text transformers
   ];
   description = "Trigger personal scripts from incoming HTTP requests";
   license = stdenv.lib.licenses.bsd2;

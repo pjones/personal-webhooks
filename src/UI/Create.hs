@@ -23,14 +23,17 @@ module UI.Create
 
 --------------------------------------------------------------------------------
 -- Library Imports:
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.Trans.Reader
 import qualified Data.Text as Text
 import Options.Applicative
 
 --------------------------------------------------------------------------------
 -- Local Imports:
 import qualified Web.Hooks.Personal.Action as Action
-import Web.Hooks.Personal.Database (Database)
 import qualified Web.Hooks.Personal.Database as Database
+import Web.Hooks.Personal.Env (Env)
+import qualified Web.Hooks.Personal.Env as Env
 import qualified Web.Hooks.Personal.Hook as Hook
 
 --------------------------------------------------------------------------------
@@ -46,9 +49,10 @@ parser = Options <$> Action.optionParser
 
 --------------------------------------------------------------------------------
 -- | Run the @create@ command to create a new webhook.
-run :: Options -> Database -> IO ()
-run Options{..} db = do
+run :: (MonadIO m) => Options -> ReaderT Env m ()
+run Options{..} = do
+  d <- asks Env.database
   a <- Action.normalize optionAction
   h <- Hook.hook Nothing a
-  _ <- Database.runInsert db Hook.table [h]
-  putStrLn ("New hook code: " ++ Text.unpack (Hook.hookCode h))
+  _ <- Database.runInsert d Hook.table [h]
+  liftIO $ putStrLn ("New hook code: " ++ Text.unpack (Hook.hookCode h))

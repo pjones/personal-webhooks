@@ -1,0 +1,23 @@
+################################################################################
+# Database settings:
+database:
+  # Database connection string:
+  connection: "user=webhooks dbname=webhooks password=webhooks"
+
+  # Number of database connections to keep in the connection pool:
+  poolSize: 5
+
+################################################################################
+# Hook action settings:
+actions:
+  # Maximum allowed size of files being written to (in bytes):
+  maxFileSize: 1048576 # 1MB
+
+  # Maximum number of milliseconds to wait for file writes to finish:
+  writeTimeout: 1000 # 1 second
+
+################################################################################
+# Web request settings:
+requests:
+  # Maximum number of bytes allowed in a web request body.
+  maxBodySize: 2048 # 2k

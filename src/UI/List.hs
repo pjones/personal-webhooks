@@ -24,6 +24,8 @@ module UI.List
 --------------------------------------------------------------------------------
 -- Library Imports:
 import Control.Monad (forM_)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.Trans.Reader
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import Data.Default (def)
@@ -34,8 +36,9 @@ import qualified Text.Layout.Table as Table
 
 --------------------------------------------------------------------------------
 -- Local Imports:
-import Web.Hooks.Personal.Database (Database)
 import qualified Web.Hooks.Personal.Database as Database
+import Web.Hooks.Personal.Env (Env)
+import qualified Web.Hooks.Personal.Env as Env
 import qualified Web.Hooks.Personal.Hook as Hook
 
 --------------------------------------------------------------------------------
@@ -79,12 +82,13 @@ formatted hs =
                                    ]
 
 --------------------------------------------------------------------------------
--- | Run the @create@ command to create a new web hook.
-run :: Options -> Database -> IO ()
-run Options{..} db = do
-  hooks <- Database.runQuery db query :: IO [Hook.Hook]
+-- | Run the @list@ command to list existing hooks.
+run :: (MonadIO m) => Options -> ReaderT Env m ()
+run Options{..} = do
+  db    <- asks Env.database
+  hooks <- Database.runQuery db query
 
-  case optionFormat of
+  liftIO $ case optionFormat of
     Table -> formatted hooks
     JSON  -> LBS.putStrLn (Aeson.encode hooks)
     Plain -> forM_ hooks $ \Hook.Hook{..} ->

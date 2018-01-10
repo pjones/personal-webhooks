@@ -27,15 +27,22 @@ import Data.Default (Default(def))
 data Config = Config
   { configMaxFileSize :: Integer
     -- ^ Maximum number of bytes to all a file to grow before aborting.
+
+  , configWriteTimeout :: Int
+    -- ^ Maximum number of milliseconds (1/10^3) to wait for file
+    -- writes to complete.  Useful to prevent a hung web server
+    -- waiting for a dead FIFO script.
   }
 
 --------------------------------------------------------------------------------
 instance Default Config where
   def = Config
-        { configMaxFileSize = 1048576 -- 1MB
+        { configMaxFileSize  = 1048576 -- 1MB
+        , configWriteTimeout = 1000    -- 1 second
         }
 
 --------------------------------------------------------------------------------
 instance FromJSON Config where
   parseJSON = withObject "action config" $ \v ->
-    Config <$> v .:? "maxFileSize" .!= configMaxFileSize def
+    Config <$> v .:? "maxFileSize"  .!= configMaxFileSize def
+           <*> v .:? "writeTimeout" .!= configWriteTimeout def
