@@ -22,10 +22,11 @@ module Web.Hooks.Personal.Internal.Request.Config
 --------------------------------------------------------------------------------
 import Data.Aeson (FromJSON(parseJSON), withObject, (.:?), (.!=))
 import Data.Default (Default(def))
+import Data.Word (Word64)
 
 --------------------------------------------------------------------------------
 data Config = Config
-  { configMaxBodySize :: Int
+  { configMaxBodySize :: Word64
     -- ^ Maximum number of bytes to read from an HTTP body.
   }
 

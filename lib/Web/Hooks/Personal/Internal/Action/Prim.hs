@@ -33,7 +33,7 @@ module Web.Hooks.Personal.Internal.Action.Prim
 import Control.Exception (SomeException, catch)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Trans.Except (ExceptT(..), runExceptT)
-import Data.Aeson (ToJSON, FromJSON, encode)
+import Data.Aeson (ToJSON, FromJSON, encode, toJSON)
 import qualified Data.ByteString.Lazy as LBS
 import Data.Maybe (isJust)
 import Data.Monoid ((<>))
@@ -89,7 +89,7 @@ run :: (MonadIO m)
     -> m Status
     -- ^ Result status.
 
-run Config.Config{..} (Request v) a =
+run Config.Config{..} r a =
   statusFromEither <$> liftIO (catch (runExceptT action) handleE)
 
   where
@@ -110,7 +110,7 @@ run Config.Config{..} (Request v) a =
       assert exists (Invalid $ "file doesn't exist: " ++ file)
 
       -- Ensure it won't grow bigger than allowed.
-      let bs = encode v <> "\n"
+      let bs = encode (toJSON r) <> "\n"
           bsize = toInteger (LBS.length bs)
 
       size <- liftIO (getFileSize file)

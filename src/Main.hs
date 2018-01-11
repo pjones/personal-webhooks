@@ -27,6 +27,7 @@ import Options.Applicative
 import qualified UI.Create as Create
 import qualified UI.List as List
 import qualified UI.Run as Run
+import qualified UI.Server as Server
 import qualified Web.Hooks.Personal.Env as Env
 
 --------------------------------------------------------------------------------
@@ -34,6 +35,7 @@ import qualified Web.Hooks.Personal.Env as Env
 data Command = Create Create.Options -- ^ Create a new hook.
              | List List.Options     -- ^ List hooks.
              | Run Run.Options       -- ^ Run hooks.
+             | Server Server.Options -- ^ Web server.
 
 --------------------------------------------------------------------------------
 -- | Command line options
@@ -61,6 +63,7 @@ parser =
     <*> subparser (mconcat [ createCommand
                            , listCommand
                            , runCommand
+                           , serverCommand
                            ])
 
   where
@@ -77,6 +80,9 @@ parser =
     runCommand =
       mkCmd "run" "Run hooks" (Run <$> Run.parser)
 
+    serverCommand =
+      mkCmd "server" "Run the web server" (Server <$> Server.parser)
+
 --------------------------------------------------------------------------------
 -- | Main entry point.
 main :: IO ()
@@ -89,3 +95,4 @@ main = do
       Create o -> Create.run o
       List o   -> List.run o
       Run o    -> Run.run o
+      Server o -> Server.run o

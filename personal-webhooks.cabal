@@ -5,7 +5,7 @@ license:       BSD2
 license-file:  LICENSE
 author:        Peter Jones <pjones@devalot.com>
 maintainer:    Peter Jones <pjones@devalot.com>
-copyright:     Copyright (c) 2017 Peter J. Jones
+copyright:     Copyright (c) 2017,2018 Peter J. Jones
 category:      Web
 build-type:    Simple
 cabal-version: >=1.10
@@ -41,6 +41,7 @@ library
     Web.Hooks.Personal.Env
     Web.Hooks.Personal.Hook
     Web.Hooks.Personal.Request
+    -- Web.Hooks.Personal.Internal
       -- Web.Hooks.Personal.Internal.Action
         Web.Hooks.Personal.Internal.Action.Config
         Web.Hooks.Personal.Internal.Action.Options
@@ -82,12 +83,8 @@ library
                , postgresql-simple           >= 0.5  && < 0.6
                , postgresql-simple-migration >= 0.1  && < 0.2
                , product-profunctors         >= 0.8  && < 0.9
-               , profunctors                 >= 5.2  && < 5.3
                , resource-pool               >= 0.2  && < 0.3
                , sandi                       >= 0.4  && < 0.5
-               , snap                        >= 1.0  && < 1.1
-               , snap-core                   >= 1.0  && < 1.1
-               , snap-server                 >= 1.0  && < 1.1
                , template-haskell            >= 2.11 && < 2.12
                , text                        >= 1.2  && < 1.3
                , time                        >= 1.6  && < 1.9
@@ -100,6 +97,7 @@ executable webhooks
     UI.Create
     UI.List
     UI.Run
+    UI.Server
 
   hs-source-dirs: src
   main-is: Main.hs
@@ -113,6 +111,8 @@ executable webhooks
                , opaleye
                , optparse-applicative
                , personal-webhooks
+               , snap-core >= 1.0 && < 1.1
+               , snap-server >= 1.0 && < 1.1
                , table-layout >= 0.8 && < 0.9
                , text
                , transformers

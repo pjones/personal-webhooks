@@ -14,33 +14,38 @@
 #
 ################################################################################
 #
-# Execute a command for each line read from a fifo.
+# Execute a command for each line read from a FIFO.
 #
 # For example, to use in conjunction with the download-video.sh script:
 #
 # watchfifo.sh -f /tmp/download.fifo -- download-video.sh -d ~/Downloads
 #
-# Lines read from the fifo are piped into the given command's stdin.
+# Lines read from the FIFO are piped into the given command's stdin.
 #
 ################################################################################
 set -e
 option_fifo_file=""
+option_group=""
 
 ################################################################################
 usage () {
 cat <<EOF
-Usage: watchfifo.sh [options] -- command [arg, arg, ...]
+Usage: watchfifo.sh [options] -- command [arg1, arg2, ...]
 
-  -f FILE The fifo file to create and manage
+  -f FILE The FIFO file to create and manage
+  -g GRP  Set the FIFO file's group to GRP
   -h      This message
 
 EOF
 }
 
 ################################################################################
-while getopts "f:h" o; do
+while getopts "f:g:h" o; do
   case "${o}" in
     f) option_fifo_file=$OPTARG
+       ;;
+
+    g) option_group=$OPTARG
        ;;
 
     h) usage
@@ -67,10 +72,14 @@ prepare() {
   fi
 
   if [ -r "$option_fifo_file" ]; then
-    die "fifo file exists, remove it first: $option_fifo_file"
+    die "FIFO file exists, remove it first: $option_fifo_file"
   fi
 
-  mkfifo -m 0622 "$option_fifo_file"
+  mkfifo -m 0620 "$option_fifo_file"
+
+  if [ -n "$option_group" ]; then
+    chgrp "$option_group" "$option_fifo_file"
+  fi
 }
 
 ################################################################################
@@ -79,6 +88,10 @@ cleanup() {
 }
 
 ################################################################################
+if [ $# -le 0 ]; then
+  die "please provide a command to run after -- "
+fi
+
 export IFS=$'\n'
 trap cleanup EXIT
 prepare

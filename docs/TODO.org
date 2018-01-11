@@ -1,0 +1,15 @@
+* Before First Release
+** DONE Collapse single query parameters
+   CLOSED: [2018-01-10 Wed 14:55]
+   - When turning query parameters into JSON, all values will be
+     arrays.  To fix this, pull the element out of the array if the
+     length of the array is 1.
+** DONE Add support for HTTP GET
+   CLOSED: [2018-01-10 Wed 16:56]
+** DONE Add indexes to the migration (and change ownership of the sequence)
+   CLOSED: [2018-01-10 Wed 17:36]
+** DONE The default config file path is actually a directory
+   CLOSED: [2018-01-10 Wed 17:40]
+** DONE Add a -g option to watchfifo.sh to set the FIFO's group
+   CLOSED: [2018-01-10 Wed 17:49]
+** TODO Write an installation guide

@@ -31,6 +31,7 @@ import Data.Bifunctor (bimap)
 import Data.Default (Default(def))
 import qualified Data.Yaml as YAML
 import System.Directory (XdgDirectory(..), getXdgDirectory, doesFileExist)
+import System.FilePath ((</>))
 
 --------------------------------------------------------------------------------
 -- Local imports:
@@ -64,7 +65,9 @@ instance FromJSON Config where
 --------------------------------------------------------------------------------
 -- | The path to the default configuration file.
 defaultPath :: (MonadIO m) => m FilePath
-defaultPath = liftIO (getXdgDirectory XdgConfig "webhooks")
+defaultPath = do
+  dir <- liftIO (getXdgDirectory XdgConfig "webhooks")
+  return (dir </> "config.yml")
 
 --------------------------------------------------------------------------------
 -- | Parse the given configuration file.

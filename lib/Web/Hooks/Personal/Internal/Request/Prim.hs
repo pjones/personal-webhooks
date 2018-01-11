@@ -31,19 +31,39 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as Text
 
 --------------------------------------------------------------------------------
--- | A type to represent an HTTP request.
-newtype Request = Request Aeson.Value
+-- | A type to represent the data sent with an HTTP request.
+data Request = RequestParams (Map Text Value)
+             | RequestJSON Aeson.Value
+
+--------------------------------------------------------------------------------
+-- | Helper type to collapse query parameters that only have one value.
+data Value = Single Text | Multiple [Text]
+
+--------------------------------------------------------------------------------
+instance Aeson.ToJSON Request where
+  toJSON (RequestParams p) = Aeson.toJSON p
+  toJSON (RequestJSON v)   = v
+
+--------------------------------------------------------------------------------
+instance Aeson.ToJSON Value where
+  toJSON (Single t)    = Aeson.String t
+  toJSON (Multiple ts) = Aeson.toJSON ts
 
 --------------------------------------------------------------------------------
 -- | Create a 'Request' from a string containing JSON data.
 fromJSON :: L.ByteString -> Maybe Request
-fromJSON = fmap Request . Aeson.decode
+fromJSON = fmap RequestJSON . Aeson.decode
 
 --------------------------------------------------------------------------------
 -- | Create a 'Request' from decoded query parameters.
 fromParams :: Map B.ByteString [B.ByteString] -> Maybe Request
-fromParams =
-    Just . Request . Aeson.toJSON . Map.fromList . map convert . Map.toList
+fromParams = Just . RequestParams . Map.fromList . map convert . Map.toList
   where
-    convert :: (B.ByteString, [B.ByteString]) -> (Text, [Text])
-    convert (k, vs) = (Text.decodeUtf8 k, map Text.decodeUtf8 vs)
+    convert :: (B.ByteString, [B.ByteString]) -> (Text, Value)
+    convert (k, vs) = ( Text.decodeUtf8 k
+                      , mkValue (map Text.decodeUtf8 vs)
+                      )
+
+    mkValue :: [Text] -> Value
+    mkValue [x] = Single x
+    mkValue xs  = Multiple xs
