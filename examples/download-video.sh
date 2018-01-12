@@ -57,7 +57,7 @@ shift $((OPTIND-1))
 ################################################################################
 url=$(jq --raw-output ".url")
 
-if [ -z "$url" ]; then
+if [ -z "$url" ] || [ "$url" = "null" ]; then
   >&2 echo "ERROR: JSON file does not have a 'url' property"
   exit 1
 fi
