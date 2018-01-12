@@ -88,6 +88,16 @@ cleanup() {
 }
 
 ################################################################################
+subcommand() {
+  json=$1
+  shift
+
+  if ! echo "$json" | "$@"; then
+    >&2 echo "ERROR: child process failed"
+  fi
+}
+
+################################################################################
 if [ $# -le 0 ]; then
   die "please provide a command to run after -- "
 fi
@@ -98,8 +108,5 @@ prepare
 
 while :; do
   read -r json < "$option_fifo_file"
-
-  if ! echo "$json" | "$@"; then
-    >&2 echo "ERROR: child process failed"
-  fi
+  subcommand "$json" "$@" &
 done
