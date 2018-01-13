@@ -15,11 +15,16 @@ cabal-version: >=1.10
 extra-source-files:
   README.md
   CHANGES.md
+  docs/*.md
+  docs/*.org
+  examples/*.yml
+  examples/*.json
 
 --------------------------------------------------------------------------------
 -- Files needed at run time.
 data-files:
   data/migrations/*.sql
+  examples/*.sh
 
 --------------------------------------------------------------------------------
 source-repository head
