@@ -16,6 +16,10 @@
 set -e
 
 ################################################################################
+TMPDIR=${TMPDIR:-/tmp}
+SELF=$(basename "$0")
+
+################################################################################
 option_base_url="https://epub.press"
 option_kindle_email=""
 option_kindle_format="mobi"
@@ -91,7 +95,7 @@ cleanup() {
 
 ################################################################################
 safe_mktemp() {
-  tempfile=$(mktemp "$0.XXXXXXXX")
+  tempfile=$(mktemp "$TMPDIR/$SELF.XXXXXXXX")
   temp_files+=("$tempfile")
 }
 
