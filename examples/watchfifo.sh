@@ -25,6 +25,7 @@
 ################################################################################
 set -e
 option_fifo_file=""
+option_force=0
 option_group=""
 
 ################################################################################
@@ -33,6 +34,7 @@ cat <<EOF
 Usage: watchfifo.sh [options] -- command [arg1, arg2, ...]
 
   -f FILE The FIFO file to create and manage
+  -F      Force. If FIFO file exists, remove it
   -g GRP  Set the FIFO file's group to GRP
   -h      This message
 
@@ -40,9 +42,12 @@ EOF
 }
 
 ################################################################################
-while getopts "f:g:h" o; do
+while getopts "f:Fg:h" o; do
   case "${o}" in
     f) option_fifo_file=$OPTARG
+       ;;
+
+    F) option_force=1
        ;;
 
     g) option_group=$OPTARG
@@ -67,14 +72,6 @@ die() {
 
 ################################################################################
 prepare() {
-  if [ -z "$option_fifo_file" ]; then
-    die "you must use -f to specify a file path"
-  fi
-
-  if [ -r "$option_fifo_file" ]; then
-    die "FIFO file exists, remove it first: $option_fifo_file"
-  fi
-
   mkfifo -m 0620 "$option_fifo_file"
 
   if [ -n "$option_group" ]; then
@@ -98,10 +95,24 @@ subcommand() {
 }
 
 ################################################################################
+# Safety checks.
+if [ -z "$option_fifo_file" ]; then
+  die "you must use -f to specify a file path"
+fi
+
+if [ -r "$option_fifo_file" ]; then
+  if [ "$option_force" -eq 1 ]; then
+    rm "$option_fifo_file"
+  else
+    die "FIFO file exists, remove it first: $option_fifo_file"
+  fi
+fi
+
 if [ $# -le 0 ]; then
   die "please provide a command to run after -- "
 fi
 
+################################################################################
 export IFS=$'\n'
 trap cleanup EXIT
 prepare
