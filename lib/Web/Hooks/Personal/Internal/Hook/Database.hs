@@ -24,8 +24,7 @@ module Web.Hooks.Personal.Internal.Hook.Database
 --------------------------------------------------------------------------------
 -- Library Imports:
 import Control.Arrow (returnA)
-import Opaleye
-import Prelude hiding (all)
+import Opaleye hiding (table)
 
 --------------------------------------------------------------------------------
 -- Local Imports:
