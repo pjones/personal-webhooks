@@ -43,6 +43,8 @@ data Options = Options
   { optionConfigFile :: Maybe FilePath
     -- ^ Alternate configuration file to load.
 
+  , optionVerbose :: Bool
+
   , optionCommand :: Command
     -- ^ Which subcommand to run.
   }
@@ -59,6 +61,11 @@ parser =
                      , metavar "FILE"
                      , help "Load FILE as an alternate config file"
                      ]))
+
+    <*> switch (mconcat [ long "verbose"
+                        , short 'v'
+                        , help "Enable verbose logging"
+                        ])
 
     <*> subparser (mconcat [ createCommand
                            , listCommand
@@ -88,7 +95,7 @@ parser =
 main :: IO ()
 main = do
   options <- execParser $ info (parser <**> helper) idm
-  env <- Env.env (optionConfigFile options)
+  env <- Env.env (optionConfigFile options) (optionVerbose options)
 
   flip runReaderT env $
     case optionCommand options of

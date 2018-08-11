@@ -64,6 +64,8 @@ library
       -- Web.Hooks.Personal.Internal.Request
         Web.Hooks.Personal.Internal.Request.Config
         Web.Hooks.Personal.Internal.Request.Prim
+      -- Web.Hooks.Personal.Internal.Util
+        Web.Hooks.Personal.Internal.Util.Process
 
   other-modules:
     Paths_personal_webhooks

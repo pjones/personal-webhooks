@@ -39,6 +39,7 @@ import Web.Hooks.Personal.Env (Env)
 import qualified Web.Hooks.Personal.Env as Env
 import Web.Hooks.Personal.Hook (Hook)
 import qualified Web.Hooks.Personal.Hook as Hook
+import Web.Hooks.Personal.Internal.Util.Process (die)
 import Web.Hooks.Personal.Request (Request)
 import qualified Web.Hooks.Personal.Request as Request
 
@@ -84,7 +85,7 @@ mkRequest readFrom = do
            ReadFromStdin    -> L.getContents
 
   case Request.fromJSON raw of
-    Nothing -> Env.die "failed to parse JSON request data"
+    Nothing -> die "failed to parse JSON request data"
     Just r  -> return r
 
 --------------------------------------------------------------------------------
@@ -97,7 +98,7 @@ run Options{..} = do
     status <- runHooks request hooks
 
     when (any (/= Action.Okay) status)
-      (Env.die "at least one hook action failed")
+      (die "at least one hook action failed")
 
   where
     query = Hook.findBy optionFind

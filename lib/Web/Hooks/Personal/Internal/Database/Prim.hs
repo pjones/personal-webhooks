@@ -38,7 +38,6 @@ import qualified Data.Text.Encoding as Text
 import Database.PostgreSQL.Simple (Connection)
 import qualified Database.PostgreSQL.Simple as PostgreSQL
 import qualified Opaleye
-import System.Exit (die)
 import System.FilePath ((</>))
 
 --------------------------------------------------------------------------------
@@ -53,6 +52,7 @@ import Database.PostgreSQL.Simple.Migration ( MigrationCommand(..)
 -- Local Imports:
 import Paths_personal_webhooks (getDataDir)
 import Web.Hooks.Personal.Internal.Database.Config
+import Web.Hooks.Personal.Internal.Util.Process (die)
 
 --------------------------------------------------------------------------------
 -- | A database handle.
@@ -140,4 +140,4 @@ migrate d verbose = withConnection d go
 
       case result of
         MigrationSuccess -> return ()
-        MigrationError e -> die e
+        MigrationError e -> die ("database migration failed: " ++ e)
