@@ -60,6 +60,7 @@ feed that JSON data into a waiting script.
      example we'll pretend that the secret code is `XXX`.
 
         $ curl --data url=https://player.vimeo.com/video/148946917 \
+            -H "Content-Type: application/json" \
             http://localhost:3000/hooks/XXX
 
      This leads to the `download-video.sh` script running and being
