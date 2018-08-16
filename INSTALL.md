@@ -78,7 +78,7 @@ we'll create a simple configuration file and start the server.
      I prefer to run the server as a systemd service.  But you can run
      it anyway you'd like.  Here's how you start it:
 
-        $ webhooks server --port 3000
+         $ webhooks server --port 3000
 
      This starts the server (reading the configuration file from the
      default location) listening on port 3000 of the loopback device
