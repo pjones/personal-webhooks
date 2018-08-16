@@ -1,10 +1,12 @@
-# Trigger personal scripts from incoming HTTP requests
+Trigger personal scripts from incoming HTTP requests
+====================================================
 
 Ever wish you could do something custom with all those web hooks
 offered by various web service providers?  This package provides an
 easy and safe way to do just that.
 
-## Example: Tagging a video will download and sync it to your phone
+Example: Tagging a video will download and sync it to your phone
+----------------------------------------------------------------
 
 In the `examples` directory there is a script named
 `download-video.sh`.  Here is how I use it:
@@ -19,7 +21,8 @@ In the `examples` directory there is a script named
     the video to a directory that is automatically synced with my
     phone.
 
-## How this package works
+How this package works
+----------------------
 
 This package includes an executable called `webhooks`.  This
 executable can be used to create new hooks from the command line or
@@ -34,7 +37,8 @@ the request data will be appended to an existing file as JSON.
 question.  Thanks to the magic of POSIX named pipes (FIFOs), you can
 feed that JSON data into a waiting script.
 
-## Setting up the example web hook
+Setting up the example web hook
+-------------------------------
 
   1. Run the HTTP server provided by this package:
 
@@ -60,7 +64,6 @@ feed that JSON data into a waiting script.
      example we'll pretend that the secret code is `XXX`.
 
         $ curl --data url=https://player.vimeo.com/video/148946917 \
-            -H "Content-Type: application/json" \
             http://localhost:3000/hooks/XXX
 
      This leads to the `download-video.sh` script running and being
@@ -74,4 +77,4 @@ from being exposed to the network unencrypted.  To encourage this, the
 server only binds to the loopback device.
 
 More details about installing and running this package can be found in
-the installation guide.
+the [installation guide](INSTALL.md).
