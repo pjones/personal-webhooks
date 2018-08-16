@@ -42,12 +42,12 @@ Setting up the example web hook
 
   1. Run the HTTP server provided by this package:
 
-        $ webhooks server --port 3000
+         $ webhooks server --port 3000
 
   2. Create a new web hook that appends to a file.  In this example
      we'll configure a hook to append to the file `/tmp/foo.pipe`:
 
-        $ webhooks create --append /tmp/foo.pipe
+         $ webhooks create --append /tmp/foo.pipe
 
      This command will print a secret code for the newly created hook.
      (If you forget the hook's secret code you can use the `webhooks
@@ -58,18 +58,18 @@ Setting up the example web hook
      do this for you and then execute other commands as requests come
      in.  (The commands receive JSONs request on their stdin.)
 
-        $ examples/watchfifo.sh -f /tmp/foo.pipe -- examples/download-video.sh
+         $ examples/watchfifo.sh -f /tmp/foo.pipe -- examples/download-video.sh
 
   4. Use the hook's secret code to trigger your script.  In this
      example we'll pretend that the secret code is `XXX`.
 
-        $ curl --data url=https://player.vimeo.com/video/148946917 \
-            http://localhost:3000/hooks/XXX
+         $ curl --data url=https://player.vimeo.com/video/148946917 \
+             http://localhost:3000/hooks/XXX
 
      This leads to the `download-video.sh` script running and being
      fed the following JSON:
 
-        {"url": "https://player.vimeo.com/video/148946917"}
+         {"url": "https://player.vimeo.com/video/148946917"}
 
 Ideally, you should run the `webhooks` server behind a reverse proxy
 that is properly configured for TLS.  This will prevent hook codes
