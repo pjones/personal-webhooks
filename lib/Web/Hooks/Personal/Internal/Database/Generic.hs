@@ -31,7 +31,7 @@ import Data.Profunctor.Product.Default (Default(def))
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField(..), Conversion, ResultError(..), returnError)
 import qualified Language.Haskell.TH as TH
-import Opaleye
+import Opaleye hiding (FromField)
 
 --------------------------------------------------------------------------------
 -- | A type wrapper to lift another type into PostgreSQL via @PGJson@.
