@@ -43,10 +43,9 @@ common options
     -Wall -Wno-name-shadowing -Werror=incomplete-record-updates
     -Werror=incomplete-uni-patterns -Werror=missing-home-modules
     -Widentities -Wmissing-export-lists -Wredundant-constraints
-    -fwrite-ide-info -hiedir=.hie
 
   if flag(maintainer)
-    ghc-options: -Werror
+    ghc-options: -Werror -fwrite-ide-info -hiedir=.hie
 
 --------------------------------------------------------------------------------
 common extensions
