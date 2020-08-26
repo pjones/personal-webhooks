@@ -26,7 +26,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         cabal: ["3.2"]
-        ghc: ["8.6.5"]
+        ghc: ["8.6"]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
