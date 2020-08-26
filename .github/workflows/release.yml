@@ -33,7 +33,9 @@ jobs:
 
       - name: Install Windows Dependencies
         if: matrix.os == 'windows-latest'
-        run: choco install zip
+        run: |
+          choco install zip
+          choco install postgresql12 --force
 
       - name: Setup Haskell
         id: setup-haskell-cabal
