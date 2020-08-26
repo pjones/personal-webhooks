@@ -16,8 +16,6 @@ build-type:         Simple
 extra-source-files:
   README.md
   CHANGES.md
-  docs/*.md
-  docs/*.org
   examples/*.yml
   examples/*.json
 
@@ -30,7 +28,7 @@ data-files:
 --------------------------------------------------------------------------------
 source-repository head
   type:     git
-  location: git://github.com/pjones/personal-webhooks.git
+  location: https://github.com/pjones/personal-webhooks.git
 
 --------------------------------------------------------------------------------
 flag maintainer
@@ -90,7 +88,7 @@ common dependencies
     , relude                       >=0.6  && <0.8
     , resource-pool                ^>=0.2
     , table-layout                 ^>=0.9
-    , template-haskell             >=2.15
+    , template-haskell             >=2.14 && <2.16
     , time                         >=1.6  && <1.10
     , unordered-containers         ^>=0.2
     , wai                          ^>=3.2
