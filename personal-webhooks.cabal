@@ -88,7 +88,7 @@ common dependencies
     , relude                       >=0.6  && <0.8
     , resource-pool                ^>=0.2
     , table-layout                 ^>=0.9
-    , template-haskell             >=2.14 && <2.16
+    , template-haskell             >=2.14 && <2.17
     , time                         >=1.6  && <1.10
     , unordered-containers         ^>=0.2
     , wai                          ^>=3.2
