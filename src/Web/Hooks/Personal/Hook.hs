@@ -12,5 +12,21 @@
 --   contained in the LICENSE file.
 --
 -- License: BSD-2-Clause
-import Distribution.Simple
-main = defaultMain
+--
+-- Hook type and functions.
+module Web.Hooks.Personal.Hook
+  ( Hook.Hook,
+    Hook.HookNotSaved,
+    Hook.Hook' (..),
+    Hook.FindBy (..),
+    Hook.hook,
+    Hook.table,
+    Hook.findBy,
+    Hook.findWithExpired,
+    Hook.parseFindBy,
+  )
+where
+
+import qualified Web.Hooks.Personal.Internal.Hook.Database as Hook
+import qualified Web.Hooks.Personal.Internal.Hook.FindBy as Hook
+import qualified Web.Hooks.Personal.Internal.Hook.Prim as Hook

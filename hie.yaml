@@ -1,0 +1,6 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:personal-webhooks"
+    - path: "./app"
+      component: "webhooks"

@@ -12,5 +12,17 @@
 --   contained in the LICENSE file.
 --
 -- License: BSD-2-Clause
-import Distribution.Simple
-main = defaultMain
+--
+-- Access to PostgreSQL functions.
+module Web.Hooks.Personal.Internal.Database.Functions
+  ( now,
+  )
+where
+
+import Opaleye.Internal.Column (Column (..))
+import qualified Opaleye.Internal.HaskellDB.PrimQuery as HPQ
+import Opaleye.SqlTypes
+
+-- | Current transaction time.
+now :: Column SqlTimestamptz
+now = Column (HPQ.FunExpr "now" [])

@@ -1,15 +1,16 @@
-name:          personal-webhooks
-version:       0.1.0.1
-synopsis:      Trigger personal scripts from incoming HTTP requests
-license:       BSD2
-license-file:  LICENSE
-author:        Peter Jones <pjones@devalot.com>
-maintainer:    Peter Jones <pjones@devalot.com>
-copyright:     Copyright (c) 2017-2019 Peter J. Jones
-category:      Web
-build-type:    Simple
-cabal-version: >=1.10
--- description:
+cabal-version:      2.2
+name:               personal-webhooks
+version:            0.1.0.1
+synopsis:           Trigger personal scripts from incoming HTTP requests
+license:            BSD-2-Clause
+license-file:       LICENSE
+author:             Peter Jones <pjones@devalot.com>
+maintainer:         Peter Jones <pjones@devalot.com>
+copyright:          Copyright (c) 2017-2020 Peter J. Jones
+homepage:           https://github.com/pjones/personal-webhooks
+bug-reports:        https://github.com/pjones/personal-webhooks/issues
+category:           Web
+build-type:         Simple
 
 --------------------------------------------------------------------------------
 extra-source-files:
@@ -28,101 +29,115 @@ data-files:
 
 --------------------------------------------------------------------------------
 source-repository head
-  type: git
+  type:     git
   location: git://github.com/pjones/personal-webhooks.git
 
 --------------------------------------------------------------------------------
 flag maintainer
   description: Enable settings for the package maintainer.
-  manual: True
-  default: False
+  manual:      True
+  default:     False
+
+--------------------------------------------------------------------------------
+common options
+  default-language: Haskell2010
+  ghc-options:
+    -Wall -Wno-name-shadowing -Werror=incomplete-record-updates
+    -Werror=incomplete-uni-patterns -Werror=missing-home-modules
+    -Widentities -Wmissing-export-lists -Wredundant-constraints
+    -fwrite-ide-info -hiedir=.hie
+
+  if flag(maintainer)
+    ghc-options: -Werror
+
+--------------------------------------------------------------------------------
+common extensions
+  default-extensions:
+    DeriveAnyClass
+    DeriveGeneric
+    DerivingStrategies
+    DerivingVia
+    FlexibleContexts
+    FlexibleInstances
+    GeneralizedNewtypeDeriving
+    LambdaCase
+    MultiParamTypeClasses
+    NamedFieldPuns
+    OverloadedLabels
+    OverloadedStrings
+    RecordWildCards
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+
+--------------------------------------------------------------------------------
+common dependencies
+  build-depends:
+    , aeson                        >=1.1  && <2.0
+    , base                         >=4.9  && <5
+    , bytestring                   ^>=0.10
+    , cryptonite                   >=0.23 && <0.27
+    , directory                    ^>=1.3
+    , filepath                     ^>=1.4
+    , http-types                   ^>=0.12
+    , memory                       ^>=0.15
+    , mtl                          ^>=2.2
+    , opaleye                      ^>=0.6
+    , optparse-applicative         >=0.13 && <0.16
+    , postgresql-simple            >=0.5  && <0.7
+    , postgresql-simple-migration  ^>=0.1
+    , product-profunctors          >=0.8  && <0.11
+    , relude                       >=0.6  && <0.8
+    , resource-pool                ^>=0.2
+    , table-layout                 ^>=0.9
+    , template-haskell             >=2.15
+    , time                         >=1.6  && <1.10
+    , unordered-containers         ^>=0.2
+    , wai                          ^>=3.2
+    , warp                         ^>=3.3
+    , yaml                         >=0.8  && <0.12
+
+  mixins:
+    base hiding (Prelude),
+    relude (Relude as Prelude)
 
 --------------------------------------------------------------------------------
 library
+  import:          options, extensions, dependencies
   exposed-modules:
     Web.Hooks.Personal.Action
     Web.Hooks.Personal.Config
     Web.Hooks.Personal.Database
     Web.Hooks.Personal.Env
     Web.Hooks.Personal.Hook
+    Web.Hooks.Personal.Internal.Action.Config
+    Web.Hooks.Personal.Internal.Action.Options
+    Web.Hooks.Personal.Internal.Action.Prim
+    Web.Hooks.Personal.Internal.Action.Status
+    Web.Hooks.Personal.Internal.Database.Config
+    Web.Hooks.Personal.Internal.Database.Functions
+    Web.Hooks.Personal.Internal.Database.Generic
+    Web.Hooks.Personal.Internal.Database.Prim
+    Web.Hooks.Personal.Internal.Hook.Database
+    Web.Hooks.Personal.Internal.Hook.FindBy
+    Web.Hooks.Personal.Internal.Hook.Prim
+    Web.Hooks.Personal.Internal.JSON
+    Web.Hooks.Personal.Internal.Request.Config
+    Web.Hooks.Personal.Internal.Request.Prim
     Web.Hooks.Personal.Request
-    -- Web.Hooks.Personal.Internal
-      -- Web.Hooks.Personal.Internal.Action
-        Web.Hooks.Personal.Internal.Action.Config
-        Web.Hooks.Personal.Internal.Action.Options
-        Web.Hooks.Personal.Internal.Action.Prim
-        Web.Hooks.Personal.Internal.Action.Status
-      -- Web.Hooks.Personal.Internal.Database
-        Web.Hooks.Personal.Internal.Database.Config
-        Web.Hooks.Personal.Internal.Database.Functions
-        Web.Hooks.Personal.Internal.Database.Generic
-        Web.Hooks.Personal.Internal.Database.Prim
-      -- Web.Hooks.Personal.Internal.Hook
-        Web.Hooks.Personal.Internal.Hook.Database
-        Web.Hooks.Personal.Internal.Hook.FindBy
-        Web.Hooks.Personal.Internal.Hook.Prim
-      -- Web.Hooks.Personal.Internal.Request
-        Web.Hooks.Personal.Internal.Request.Config
-        Web.Hooks.Personal.Internal.Request.Prim
-      -- Web.Hooks.Personal.Internal.Util
-        Web.Hooks.Personal.Internal.Util.Process
 
-  other-modules:
-    Paths_personal_webhooks
-
-  hs-source-dirs: lib
-  default-language: Haskell2010
-  ghc-options: -Wall -fwarn-incomplete-uni-patterns -Wincomplete-record-updates
-
-  if flag(maintainer)
-    ghc-options: -Werror
-
-  build-depends: base                        >= 4.9  && < 5
-               , aeson                       >= 1.1  && < 2.0
-               , bytestring                  >= 0.10 && < 0.11
-               , containers                  >= 0.5  && < 0.7
-               , cryptonite                  >= 0.23 && < 0.26
-               , data-default                >= 0.7  && < 1.0
-               , directory                   >= 1.3  && < 1.4
-               , filepath                    >= 1.4  && < 1.5
-               , opaleye                     >= 0.6  && < 0.7
-               , optparse-applicative        >= 0.13 && < 0.15
-               , postgresql-simple           >= 0.5  && < 0.7
-               , postgresql-simple-migration >= 0.1  && < 0.2
-               , product-profunctors         >= 0.8  && < 0.11
-               , resource-pool               >= 0.2  && < 0.3
-               , sandi                       >= 0.4  && < 0.6
-               , template-haskell            >= 2.11 && < 2.15
-               , text                        >= 1.2  && < 1.3
-               , time                        >= 1.6  && < 1.9
-               , transformers                >= 0.5  && < 1.0
-               , yaml                        >= 0.8  && < 0.12
+  other-modules:   Paths_personal_webhooks
+  hs-source-dirs:  src
 
 --------------------------------------------------------------------------------
 executable webhooks
+  import:         options, extensions, dependencies
   other-modules:
     UI.Create
     UI.List
     UI.Run
     UI.Server
 
-  hs-source-dirs: src
-  main-is: Main.hs
-  default-language: Haskell2010
-  ghc-options: -Wall -fwarn-incomplete-uni-patterns -Wincomplete-record-updates
-
-  build-depends: base
-               , aeson
-               , bytestring
-               , data-default
-               , opaleye
-               , optparse-applicative
-               , personal-webhooks
-               , snap-core >= 1.0    && < 1.2
-               , snap-server >= 1.0  && < 1.2
-               , table-layout >= 0.8 && < 0.9
-               , text
-               , transformers
-
-  if flag(maintainer)
-    ghc-options: -Werror
+  hs-source-dirs: app
+  main-is:        Main.hs
+  build-depends:  personal-webhooks

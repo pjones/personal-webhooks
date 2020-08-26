@@ -12,5 +12,18 @@
 --   contained in the LICENSE file.
 --
 -- License: BSD-2-Clause
-import Distribution.Simple
-main = defaultMain
+module Web.Hooks.Personal.Database
+  ( Database.Database,
+    Database.Config (..),
+    Database.Page (..),
+    Database.Rows (..),
+    Database.database,
+    Database.runQuery,
+    Database.runInsert,
+    Database.limit,
+    Database.migrate,
+  )
+where
+
+import qualified Web.Hooks.Personal.Internal.Database.Config as Database
+import qualified Web.Hooks.Personal.Internal.Database.Prim as Database

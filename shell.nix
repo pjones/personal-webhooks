@@ -1,27 +1,21 @@
-{ pkgs ? (import <nixpkgs> {}).pkgs
+# Load an interactive environment:
+{ sources ? import ./nix/sources.nix
+, pkgs ? import sources.nixpkgs { config = { allowBroken = true; }; }
+, ghc ? "default"
 }:
-
 let
-  nix-hs-src = fetchGit {
-    url = "https://code.devalot.com/pjones/nix-hs.git";
-    rev = "4a9ea2c8c6712ae3cb5892bc74dc051906535238";
-  };
-
-  nix-hs = (import "${nix-hs-src}/default.nix" {inherit pkgs;});
-
+  stan = (pkgs.haskellPackages.override (orig: {
+    overrides = pkgs.lib.composeExtensions
+      (orig.overrides or (_: _: { }))
+      (self: super: with pkgs.haskell.lib; {
+        microaeson = doJailbreak super.microaeson;
+      });
+  })).stan;
 in
-
-pkgs.mkShell {
-  buildInputs = with pkgs; [
-
-    # Haskell Dependencies:
-    haskellPackages.ghc
-    haskellPackages.cabal-install
-
-    # For IDEs:
-    nix-hs
-    haskellPackages.hoogle
-    haskellPackages.hlint
-    # haskellPackages.cabal-dependency-licenses
-  ];
-}
+(import ./. {
+  inherit ghc;
+}).interactive.overrideAttrs (orig: {
+  buildInputs =
+    (orig.buildInputs or [ ])
+    ++ [ stan ];
+})

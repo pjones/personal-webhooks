@@ -12,5 +12,15 @@
 --   contained in the LICENSE file.
 --
 -- License: BSD-2-Clause
-import Distribution.Simple
-main = defaultMain
+--
+-- Request data to pass along to a hook action.
+module Web.Hooks.Personal.Request
+  ( Request.Request,
+    Request.fromJSON,
+    Request.fromParams,
+    Request.Config (..),
+  )
+where
+
+import qualified Web.Hooks.Personal.Internal.Request.Config as Request
+import qualified Web.Hooks.Personal.Internal.Request.Prim as Request

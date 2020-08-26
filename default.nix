@@ -1,20 +1,14 @@
-{ pkgs ? (import <nixpkgs> {})
+{ sources ? import nix/sources.nix
+, pkgs ? import sources.nixpkgs { }
+, nix-hs ? import sources.nix-hs { inherit pkgs; }
+, ghc ? "default"
 }:
 
-let
-  # Remove the broken flag:
-  unBreak = drv: pkgs.haskell.lib.overrideCabal drv (drv: { broken = false; });
+nix-hs {
+  cabal = ./personal-webhooks.cabal;
+  compiler = ghc;
 
-  # Helper function to override Haskell packages:
-  haskellOverride =
-    pkgs.haskellPackages.override (orig: {
-      overrides = pkgs.lib.composeExtensions
-                    (orig.overrides or (_: _: {}))
-                    (self: super: with pkgs.haskell.lib; {
-                      table-layout = unBreak (dontCheck (doJailbreak super.table-layout));
-                    });
-      });
-
-in
-
-haskellOverride.callPackage ./personal-webhooks.nix { }
+  overrides = lib: self: super: with lib; {
+    table-layout = unBreak super.table-layout;
+  };
+}
