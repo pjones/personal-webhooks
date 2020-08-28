@@ -1,12 +1,25 @@
-Trigger personal scripts from incoming HTTP requests
-====================================================
+# Trigger scripts from incoming HTTP requests
+
+[![CI](https://github.com/pjones/personal-webhooks/workflows/CI/badge.svg)](https://github.com/pjones/personal-webhooks/actions)
+[![GitHub Tag](https://img.shields.io/github/v/tag/pjones/personal-webhooks?label=release)](https://github.com/pjones/personal-webhooks/releases)
+
 
 Ever wish you could do something custom with all those web hooks
 offered by various web service providers?  This package provides an
 easy and safe way to do just that.
 
-Example: Tagging a video will download and sync it to your phone
-----------------------------------------------------------------
+## Supported Operating Systems
+
+| OS      | Server             | Client             | Notes                               |
+| ---     | ---                | ---                | ---                                 |
+| Linux   | :heavy_check_mark: | :heavy_check_mark: |                                     |
+| macOS   | :grey_question:    | :grey_question:    | Not yet tested                      |
+| Windows | :grey_question:    | :x:                | Windows does not support FIFO files |
+
+NOTE: If someone wants to implement named pipes for Windows, or some
+other replacement for FIFO files, please open an issue.
+
+## Example: Sending a Video to Your Phone
 
 In the `examples` directory there is a script named
 `download-video.sh`.  Here is how I use it:
@@ -21,8 +34,7 @@ In the `examples` directory there is a script named
     the video to a directory that is automatically synced with my
     phone.
 
-How this package works
-----------------------
+## How This Package Works
 
 This package includes an executable called `webhooks`.  This
 executable can be used to create new hooks from the command line or
@@ -37,8 +49,7 @@ the request data will be appended to an existing file as JSON.
 question.  Thanks to the magic of POSIX named pipes (FIFOs), you can
 feed that JSON data into a waiting script.
 
-Setting up the example web hook
--------------------------------
+## Setting up the Example Webhook
 
   1. Run the HTTP server provided by this package:
 
