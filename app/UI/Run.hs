@@ -19,6 +19,7 @@ module UI.Run
   )
 where
 
+import Control.Exception.Safe (MonadCatch)
 import qualified Data.ByteString.Lazy as LByteString
 import Options.Applicative
 import qualified Web.Hooks.Personal.Action as Action
@@ -28,6 +29,7 @@ import Web.Hooks.Personal.Env (Env)
 import qualified Web.Hooks.Personal.Env as Env
 import Web.Hooks.Personal.Hook (Hook)
 import qualified Web.Hooks.Personal.Hook as Hook
+import Web.Hooks.Personal.Internal.Logging (MonadLog, logCriticalThenDie)
 import Web.Hooks.Personal.Request (Request)
 import qualified Web.Hooks.Personal.Request as Request
 
@@ -81,7 +83,14 @@ mkRequest readFrom = do
     Just r -> pure r
 
 -- | Run the @run@ command to execute hooks.
-run :: (MonadIO m) => Options -> ReaderT Env m ()
+run ::
+  forall m.
+  MonadIO m =>
+  MonadCatch m =>
+  MonadReader Env m =>
+  MonadLog m =>
+  Options ->
+  m ()
 run Options {..} = do
   db <- asks Env.database
   request <- liftIO (mkRequest optionRead)
@@ -90,15 +99,10 @@ run Options {..} = do
 
   when
     (any (/= Action.Okay) status)
-    (die "at least one hook action failed")
+    (logCriticalThenDie "at least one hook action failed")
   where
     query = Hook.findBy optionFind
-
-    runHooks ::
-      MonadIO m =>
-      Request ->
-      [Hook] ->
-      ReaderT Env m [Action.Status]
+    runHooks :: Request -> [Hook] -> m [Action.Status]
     runHooks request hooks = do
       config <- asks (Config.configAction . Env.config)
       forM hooks $ \hook -> do

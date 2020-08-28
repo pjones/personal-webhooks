@@ -20,6 +20,7 @@ import qualified UI.List as List
 import qualified UI.Run as Run
 import qualified UI.Server as Server
 import qualified Web.Hooks.Personal.Env as Env
+import qualified Web.Hooks.Personal.Internal.Logging as L
 
 -- | Subcommand.
 data Command
@@ -36,7 +37,8 @@ data Command
 data Options = Options
   { -- | Alternate configuration file to load.
     optionConfigFile :: !(Maybe FilePath),
-    optionVerbose :: !Bool,
+    -- | Logging configuration.
+    optionLogging :: !L.Config,
     -- | Which subcommand to run.
     optionCommand :: !Command
   }
@@ -55,13 +57,7 @@ parser =
               ]
           )
       )
-    <*> switch
-      ( mconcat
-          [ long "verbose",
-            short 'v',
-            help "Enable verbose logging"
-          ]
-      )
+    <*> L.parser
     <*> subparser
       ( mconcat
           [ createCommand,
@@ -90,12 +86,12 @@ parser =
 -- | Main entry point.
 main :: IO ()
 main = do
-  options <- execParser $ info (parser <**> helper) idm
-  env <- Env.env (optionConfigFile options) (optionVerbose options)
-
-  usingReaderT env $
-    case optionCommand options of
-      Create o -> Create.run o
-      List o -> List.run o
-      Run o -> Run.run o
-      Server o -> Server.run o
+  Options {..} <- execParser $ info (parser <**> helper) idm
+  L.runLogger optionLogging $ do
+    env <- Env.env optionConfigFile optionLogging
+    usingReaderT env $
+      case optionCommand of
+        Create o -> Create.run o
+        List o -> List.run o
+        Run o -> Run.run o
+        Server o -> Server.run o

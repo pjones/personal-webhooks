@@ -72,7 +72,7 @@ formatted hs =
       Table.rowG
         [ show hookID,
           toString hookCode,
-          show hookAction,
+          decodeUtf8 (Aeson.encode hookAction),
           maybe "" show hookExpirationTime
         ]
 
@@ -92,8 +92,8 @@ run Options {..} = do
             " "
             [ show hookID,
               hookCode,
-              "[" <> show hookAction <> "]",
-              show hookExpirationTime
+              decodeUtf8 (Aeson.encode hookAction),
+              maybe "Never Expires" show hookExpirationTime
             ]
   where
     query =

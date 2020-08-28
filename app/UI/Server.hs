@@ -19,9 +19,12 @@ module UI.Server
   )
 where
 
+import Control.Exception.Safe (MonadCatch)
+import qualified Data.Aeson as Aeson
 import qualified Data.ByteString as ByteString
 import qualified Data.HashMap.Strict as HashMap
 import Data.List (lookup)
+import qualified Data.Text as Text
 import qualified Network.HTTP.Types as HTTP
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
@@ -33,6 +36,7 @@ import Web.Hooks.Personal.Env (Env)
 import qualified Web.Hooks.Personal.Env as Env
 import Web.Hooks.Personal.Hook (Hook)
 import qualified Web.Hooks.Personal.Hook as Hook
+import Web.Hooks.Personal.Internal.Logging (MonadLog, logDebug, logError, logInfo, runLogger)
 import qualified Web.Hooks.Personal.Request as Request
 
 -- | Command line options.
@@ -57,13 +61,20 @@ parser =
 -- | Fetch a hook from the database and run its action.
 findAndRunHook ::
   MonadIO m =>
+  MonadCatch m =>
+  MonadLog m =>
   Env ->
   Text ->
   Request.Request ->
   MaybeT m Action.Status
 findAndRunHook env code request = do
   a <- findByCode <&> Hook.hookAction
-  Action.run actionConfig request a
+  s <- Action.run actionConfig request a
+  case s of
+    Action.Okay -> logDebug "action completed successfully"
+    Action.Invalid msg -> logError ("action error: " <> toText msg)
+    Action.Fail msg -> logError ("action failed: " <> toText msg)
+  pure s
   where
     findByCode :: (MonadIO m) => MaybeT m Hook
     findByCode =
@@ -81,30 +92,42 @@ app env request respond = do
   code <- go <&> maybe HTTP.badRequest400 Action.statusToHTTP
   respond (Wai.responseBuilder code mempty mempty)
   where
-    go :: MonadIO m => m (Maybe Action.Status)
-    go = runMaybeT $ do
-      let method = Wai.requestMethod request
-          headers = Wai.requestHeaders request
-          contentType = lookup "Content-Type" headers
-      rdata <-
-        case (method, contentType) of
-          ("GET", _) ->
-            pure (fromParams $ Wai.queryString request)
-          ("POST", Just "application/x-www-form-urlencoded") ->
-            readBody
-              >>= ( toStrict
-                      >>> HTTP.parseQuery
-                      >>> fromParams
-                      >>> pure
-                  )
-          ("POST", Just "application/json") ->
-            readBody
-              >>= ( Request.fromJSON
-                      >>> hoistMaybe
-                  )
-          _ -> empty
-      code <- hoistMaybe hookCode
-      findAndRunHook env code rdata
+    go :: IO (Maybe Action.Status)
+    go = runLogger (Env.logging env) $
+      runMaybeT $ do
+        let method = Wai.requestMethod request
+            headers = Wai.requestHeaders request
+            contentType =
+              lookup "Content-Type" headers
+                <&> (decodeUtf8 >>> Text.toLower)
+        rdata <-
+          case (method, contentType) of
+            ("GET", _) ->
+              pure (fromParams $ Wai.queryString request)
+            ("POST", Just "application/x-www-form-urlencoded") ->
+              readBody
+                >>= ( toStrict
+                        >>> HTTP.parseQuery
+                        >>> fromParams
+                        >>> pure
+                    )
+            ("POST", Just "application/json") ->
+              readBody
+                >>= ( Request.fromJSON
+                        >>> hoistMaybe
+                    )
+            (m, c) -> do
+              logDebug
+                ( "unsupported request method or content type: "
+                    <> decodeUtf8 m
+                    <> " "
+                    <> fromMaybe "(no content type)" c
+                )
+              empty
+        logDebug ("request payload: " <> decodeUtf8 (Aeson.encode rdata))
+        code <- hoistMaybe hookCode
+        logDebug ("requested hook code: " <> code)
+        findAndRunHook env code rdata
 
     -- Read the body of the request, honoring the @maxBodySize@
     -- configuration setting.
@@ -140,11 +163,27 @@ app env request respond = do
         _anyOtherPath -> Nothing
 
 -- | Run the @server@ command to receive HTTP requests.
-run :: MonadIO m => Options -> ReaderT Env m ()
+run ::
+  MonadIO m =>
+  MonadLog m =>
+  Options ->
+  ReaderT Env m ()
 run Options {..} = do
   env <- ask
   let settings =
         Warp.defaultSettings
           & Warp.setHost "127.0.0.1"
           & Warp.setPort optionPort
+          & Warp.setLogger (logger env)
+  logInfo ("server running on http://127.0.0.1" <> ":" <> show optionPort)
   liftIO (Warp.runSettings settings (app env))
+
+-- | Logging function for Warp.
+logger :: Env -> Wai.Request -> HTTP.Status -> Maybe Integer -> IO ()
+logger env request status _ =
+  runLogger (Env.logging env) $
+    let host = show (Wai.remoteHost request)
+        method = decodeUtf8 (Wai.requestMethod request)
+        path = "/" <> Text.intercalate "/" (Wai.pathInfo request)
+        code = show (HTTP.statusCode status)
+     in logInfo (method <> " " <> path <> " " <> code <> " " <> host)

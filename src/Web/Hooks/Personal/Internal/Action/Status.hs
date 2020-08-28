@@ -17,7 +17,6 @@
 module Web.Hooks.Personal.Internal.Action.Status
   ( Status (..),
     assert,
-    statusFromEither,
     statusToHTTP,
   )
 where
@@ -35,13 +34,10 @@ data Status
     Fail !String
   deriving (Eq, Show)
 
+-- | Fail unless an assertion holds.
 assert :: MonadError Status m => Bool -> Status -> m ()
 assert True _ = pass
 assert False e = throwError e
-
-statusFromEither :: Either Status a -> Status
-statusFromEither (Left s) = s
-statusFromEither (Right _) = Okay
 
 -- | Translate a 'Status' into an HTTP status code.
 statusToHTTP :: Status -> HTTP.Status

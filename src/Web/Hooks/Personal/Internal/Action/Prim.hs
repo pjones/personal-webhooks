@@ -23,15 +23,16 @@ module Web.Hooks.Personal.Internal.Action.Prim
   )
 where
 
-import Control.Exception (catch)
+import Control.Exception.Safe (MonadCatch, catch)
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as LByteString
 import System.Directory (doesFileExist, getFileSize, makeAbsolute)
 import System.Timeout (timeout)
 import Web.Hooks.Personal.Internal.Action.Config (Config)
 import qualified Web.Hooks.Personal.Internal.Action.Config as Config
-import Web.Hooks.Personal.Internal.Action.Status (Status (..), assert, statusFromEither)
+import Web.Hooks.Personal.Internal.Action.Status (Status (..), assert)
 import Web.Hooks.Personal.Internal.JSON
+import Web.Hooks.Personal.Internal.Logging (MonadLog, logDebug)
 import Web.Hooks.Personal.Internal.Request.Prim
 
 -- | The different kinds of actions.
@@ -58,7 +59,10 @@ normalize = \case
 
 -- | Run an action.
 run ::
-  (MonadIO m) =>
+  forall m.
+  MonadIO m =>
+  MonadCatch m =>
+  MonadLog m =>
   -- | Action configuration.
   Config ->
   -- | Incoming data.
@@ -68,18 +72,22 @@ run ::
   -- | Result status.
   m Status
 run Config.Config {..} r a =
-  statusFromEither <$> liftIO (catch (runExceptT $ action a) handleE)
+  catch (action a) onError
   where
-    handleE :: SomeException -> IO (Either Status a)
-    handleE = show >>> Fail >>> Left >>> pure
+    onError :: SomeException -> m Status
+    onError = show >>> Fail >>> pure
 
-    action :: Action -> ExceptT Status IO ()
+    action :: Action -> m Status
     action = \case
-      AppendFileAction f -> append f
-      NoAction -> pass
+      AppendFileAction f -> do
+        logDebug ("appending request data to " <> toText f)
+        append f <&> either id id
+      NoAction -> do
+        logDebug "action is a no-op, skipping"
+        pure Okay
 
-    append :: FilePath -> ExceptT Status IO ()
-    append file = do
+    append :: FilePath -> m (Either Status Status)
+    append file = runExceptT $ do
       -- Verify the file exists.
       exists <- liftIO (doesFileExist file)
       assert exists (Invalid $ "file doesn't exist: " ++ file)
@@ -100,4 +108,6 @@ run Config.Config {..} r a =
             withFile file AppendMode (`LByteString.hPut` bs)
 
       -- Test to see if all data was written.
-      assert (isJust t) (Fail $ "timeout while writing to " ++ file)
+      case t of
+        Just () -> pure Okay
+        Nothing -> pure (Fail $ "timeout while writing to " ++ file)

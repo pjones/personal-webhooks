@@ -39,6 +39,7 @@ import qualified Opaleye
 import Paths_personal_webhooks (getDataDir)
 import System.FilePath ((</>))
 import Web.Hooks.Personal.Internal.Database.Config
+import Web.Hooks.Personal.Internal.Logging (MonadLog, logCriticalThenDie, logDebug)
 
 -- | A database handle.
 newtype Database = Database
@@ -101,10 +102,18 @@ limit (Page x) (Rows y) = Opaleye.limit y . Opaleye.offset (x * y)
 
 -- | Run the database migrations.  Exits the current process if there
 -- is an error running the migrations.
-migrate :: (MonadIO m) => Database -> Bool -> m ()
-migrate d verbose = withConnection d go
+migrate ::
+  forall m.
+  MonadIO m =>
+  MonadLog m =>
+  Database ->
+  Bool ->
+  m ()
+migrate d verbose = do
+  logDebug "checking database for possible schema upgrade"
+  join (withConnection d go)
   where
-    go :: Connection -> IO ()
+    go :: Connection -> IO (m ())
     go c = do
       inited <- existsTable c "schema_migrations"
       datadir <- liftIO getDataDir
@@ -117,6 +126,8 @@ migrate d verbose = withConnection d go
         PostgreSQL.withTransaction c $
           runMigrations verbose c ms
 
-      case result of
-        MigrationSuccess -> pass
-        MigrationError e -> die ("database migration failed: " ++ e)
+      pure $ case result of
+        MigrationSuccess ->
+          logDebug "database schema updated successfully"
+        MigrationError e ->
+          logCriticalThenDie ("database schema update failed: " <> toText e)

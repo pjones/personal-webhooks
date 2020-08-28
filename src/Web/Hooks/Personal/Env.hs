@@ -24,29 +24,29 @@ import Web.Hooks.Personal.Config (Config)
 import qualified Web.Hooks.Personal.Config as Config
 import Web.Hooks.Personal.Internal.Database.Prim (Database)
 import qualified Web.Hooks.Personal.Internal.Database.Prim as Database
+import Web.Hooks.Personal.Internal.Logging (MonadLog)
+import qualified Web.Hooks.Personal.Internal.Logging as Logging
 
 -- | Everything you need to use this library.
 data Env = Env
   { -- | Master configuration.
     config :: !Config,
-    -- | Verbose flag.
-    verbose :: !Bool,
     -- | Database handle.
-    database :: !Database
+    database :: !Database,
+    -- | Logging configuration.
+    logging :: !Logging.Config
   }
 
 -- | Create an environment.  The optional 'FilePath' is passed along
 -- to the 'Config.load' function.
-env :: (MonadIO m) => Maybe FilePath -> Bool -> m Env
-env path vflag = do
+env ::
+  MonadIO m =>
+  MonadLog m =>
+  Maybe FilePath ->
+  Logging.Config ->
+  m Env
+env path l = do
   c <- Config.load path >>= either die pure
   d <- Database.database (Config.configDatabase c)
-
-  Database.migrate d vflag
-
-  pure
-    Env
-      { config = c,
-        verbose = vflag,
-        database = d
-      }
+  Database.migrate d (Logging.configSeverity l == Logging.Debug)
+  pure Env {config = c, database = d, logging = l}
