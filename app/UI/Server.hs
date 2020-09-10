@@ -36,7 +36,13 @@ import Web.Hooks.Personal.Env (Env)
 import qualified Web.Hooks.Personal.Env as Env
 import Web.Hooks.Personal.Hook (Hook)
 import qualified Web.Hooks.Personal.Hook as Hook
-import Web.Hooks.Personal.Internal.Logging (MonadLog, logDebug, logError, logInfo, runLogger)
+import Web.Hooks.Personal.Internal.Logging
+  ( MonadLog,
+    logDebug,
+    logError,
+    logInfo,
+    runLoggerIO,
+  )
 import qualified Web.Hooks.Personal.Request as Request
 
 -- | Command line options.
@@ -93,7 +99,7 @@ app env request respond = do
   respond (Wai.responseBuilder code mempty mempty)
   where
     go :: IO (Maybe Action.Status)
-    go = runLogger (Env.logging env) $
+    go = runLoggerIO (Env.loggingH env) $
       runMaybeT $ do
         let method = Wai.requestMethod request
             headers = Wai.requestHeaders request
@@ -181,7 +187,7 @@ run Options {..} = do
 -- | Logging function for Warp.
 logger :: Env -> Wai.Request -> HTTP.Status -> Maybe Integer -> IO ()
 logger env request status _ =
-  runLogger (Env.logging env) $
+  runLoggerIO (Env.loggingH env) $
     let host = show (Wai.remoteHost request)
         method = decodeUtf8 (Wai.requestMethod request)
         path = "/" <> Text.intercalate "/" (Wai.pathInfo request)

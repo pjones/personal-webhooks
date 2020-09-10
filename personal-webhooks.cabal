@@ -72,6 +72,7 @@ common extensions
 common dependencies
   build-depends:
     , aeson                        >=1.1  && <2.0
+    , async                        ^>=2.2
     , base                         >=4.9  && <5
     , bytestring                   ^>=0.10
     , cryptonite                   >=0.23 && <0.27
@@ -86,10 +87,12 @@ common dependencies
     , postgresql-simple            >=0.5  && <0.7
     , postgresql-simple-migration  ^>=0.1
     , prettyprinter                ^>=1.6
+    , process                      ^>=1.6
     , product-profunctors          >=0.8  && <0.11
     , relude                       >=0.6  && <0.8
     , resource-pool                ^>=0.2
     , safe-exceptions              ^>=0.1
+    , stm                          ^>=2.5
     , table-layout                 ^>=0.9
     , template-haskell             >=2.14 && <2.17
     , text                         ^>=1.2
@@ -98,6 +101,9 @@ common dependencies
     , wai                          ^>=3.2
     , warp                         ^>=3.3
     , yaml                         >=0.8  && <0.12
+
+  if !os(windows)
+    build-depends: unix ^>=2.7
 
   mixins:
     base hiding (Prelude),
@@ -112,6 +118,8 @@ library
     Web.Hooks.Personal.Database
     Web.Hooks.Personal.Env
     Web.Hooks.Personal.Hook
+    Web.Hooks.Personal.Internal.Action.Client
+    Web.Hooks.Personal.Internal.Action.Client.Config
     Web.Hooks.Personal.Internal.Action.Config
     Web.Hooks.Personal.Internal.Action.Options
     Web.Hooks.Personal.Internal.Action.Prim
@@ -131,6 +139,12 @@ library
     Web.Hooks.Personal.Internal.Request.Prim
     Web.Hooks.Personal.Request
 
+  if os(windows)
+    other-modules: Web.Hooks.Personal.Internal.Action.Client.Windows
+
+  else
+    other-modules: Web.Hooks.Personal.Internal.Action.Client.Posix
+
   other-modules:   Paths_personal_webhooks
   hs-source-dirs:  src
 
@@ -138,6 +152,7 @@ library
 executable webhooks
   import:         options, extensions, dependencies
   other-modules:
+    UI.Client
     UI.Create
     UI.List
     UI.Run
@@ -145,4 +160,5 @@ executable webhooks
 
   hs-source-dirs: app
   main-is:        Main.hs
+  ghc-options:    -threaded
   build-depends:  personal-webhooks

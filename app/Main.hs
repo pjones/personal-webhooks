@@ -14,7 +14,9 @@
 -- License: BSD-2-Clause
 module Main (main) where
 
+import qualified Control.Monad.Log as Log
 import Options.Applicative
+import qualified UI.Client as Client
 import qualified UI.Create as Create
 import qualified UI.List as List
 import qualified UI.Run as Run
@@ -32,6 +34,8 @@ data Command
     Run !Run.Options
   | -- | Web server.
     Server !Server.Options
+  | -- | Script dispatcher.
+    Client !Client.Options
 
 -- | Command line options
 data Options = Options
@@ -63,7 +67,8 @@ parser =
           [ createCommand,
             listCommand,
             runCommand,
-            serverCommand
+            serverCommand,
+            clientCommand
           ]
       )
   where
@@ -83,15 +88,20 @@ parser =
     serverCommand =
       mkCmd "server" "Run the web server" (Server <$> Server.parser)
 
+    clientCommand =
+      mkCmd "client" "Run a script when a hook fires" (Client <$> Client.parser)
+
 -- | Main entry point.
 main :: IO ()
 main = do
   Options {..} <- execParser $ info (parser <**> helper) idm
   L.runLogger optionLogging $ do
-    env <- Env.env optionConfigFile optionLogging
+    lenv <- Log.LoggingT ask
+    env <- Env.env optionConfigFile optionLogging lenv
     usingReaderT env $
       case optionCommand of
         Create o -> Create.run o
         List o -> List.run o
         Run o -> Run.run o
         Server o -> Server.run o
+        Client o -> Client.run o

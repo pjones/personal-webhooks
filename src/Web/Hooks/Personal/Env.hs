@@ -34,7 +34,9 @@ data Env = Env
     -- | Database handle.
     database :: !Database,
     -- | Logging configuration.
-    logging :: !Logging.Config
+    loggingC :: !Logging.Config,
+    -- | Logging handler.
+    loggingH :: !Logging.Handler
   }
 
 -- | Create an environment.  The optional 'FilePath' is passed along
@@ -44,9 +46,10 @@ env ::
   MonadLog m =>
   Maybe FilePath ->
   Logging.Config ->
+  Logging.Handler ->
   m Env
-env path l = do
+env path lc lh = do
   c <- Config.load path >>= either die pure
   d <- Database.database (Config.configDatabase c)
-  Database.migrate d (Logging.configSeverity l == Logging.Debug)
-  pure Env {config = c, database = d, logging = l}
+  Database.migrate d (Logging.configSeverity lc == Logging.Debug)
+  pure Env {config = c, database = d, loggingC = lc, loggingH = lh}

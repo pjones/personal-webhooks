@@ -12,30 +12,21 @@
 --   contained in the LICENSE file.
 --
 -- License: BSD-2-Clause
-module Web.Hooks.Personal.Internal.Logging
-  ( -- * Configuration
-    Config (..),
-    parser,
-
-    -- * Logging
-    MonadLog,
-    LoggingStyle (..),
-    logCriticalThenDie,
-    runLogger,
-
-    -- * Lower-level logging:
-    Message,
-    Handler,
-    runLoggerIO,
-
-    -- * Re-exports
-    Severity (..),
-    logError,
-    logWarning,
-    logInfo,
-    logDebug,
+module Web.Hooks.Personal.Internal.Action.Client.Windows
+  ( manageNamedPipe,
   )
 where
 
-import Web.Hooks.Personal.Internal.Logging.Config
-import Web.Hooks.Personal.Internal.Logging.Prim
+import Web.Hooks.Personal.Env (Env)
+import Web.Hooks.Personal.Internal.Action.Client.Config
+import Web.Hooks.Personal.Internal.Action.Status
+
+-- | Not implemented.
+manageNamedPipe ::
+  Env ->
+  (ByteString -> IO ()) ->
+  Config ->
+  FilePath ->
+  IO Status
+manageNamedPipe _ _ _ _ =
+  pure (Invalid "named pipes on Windows are not supported")

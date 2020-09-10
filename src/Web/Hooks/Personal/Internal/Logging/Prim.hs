@@ -15,8 +15,10 @@
 module Web.Hooks.Personal.Internal.Logging.Prim
   ( -- * Logging
     MonadLog,
+    Handler,
     logCriticalThenDie,
     runLogger,
+    runLoggerIO,
 
     -- * Re-exports
     Log.logError,
@@ -32,11 +34,18 @@ import qualified Control.Monad.Log as Log
 import qualified Data.Text as Text
 import Data.Text.Prettyprint.Doc (Doc, pretty)
 import qualified Data.Text.Prettyprint.Doc as PP
+import qualified Data.Text.Prettyprint.Doc.Render.Text as PP
 import qualified Data.Time as Time
+import System.IO (hFlush)
 import Web.Hooks.Personal.Internal.Logging.Config
 
-type MonadLog m = Log.MonadLog (WithSeverity Text) m
+-- | A class of types that support logging.
+type MonadLog m = Log.MonadLog Message m
 
+-- | The type of the logging handler.
+type Handler = Log.Handler IO Message
+
+-- | Log a critical error and then exit the process.
 logCriticalThenDie ::
   MonadIO m =>
   MonadLog m =>
@@ -54,13 +63,21 @@ runLogger ::
   Log.LoggingT (WithSeverity Text) m a ->
   m a
 runLogger config m =
-  Log.withFDHandler
+  Log.withBatchedHandler
     Log.defaultBatchingOptions
-    (configHandle config)
-    (configRibbonFrac config)
-    (configWidth config)
-    $ \printer ->
-      Log.runLoggingT m (format config >=> maybe pass printer)
+    ( \messages -> liftIO $ do
+        PP.vsep (toList messages) <> PP.line'
+          & PP.layoutPretty (PP.LayoutOptions PP.Unbounded)
+          & PP.renderIO (configHandle config)
+        hFlush (configHandle config)
+    )
+    ( \printer ->
+        Log.runLoggingT m (format config >=> maybe pass printer)
+    )
+
+-- | Resume an existing 'Log.LoggingT' execute from inside 'IO'.
+runLoggerIO :: Handler -> Log.LoggingT Message IO a -> IO a
+runLoggerIO h = (`Log.runLoggingT` h)
 
 -- | Format a log message.
 format :: forall m ann. MonadIO m => Config -> Message -> m (Maybe (Doc ann))
